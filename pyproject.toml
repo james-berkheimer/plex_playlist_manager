@@ -1,0 +1,92 @@
+[build-system]
+requires = ["setuptools>=42", "wheel", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+# [tool.setuptools_scm]
+# write_to = "src/media_conveyor/version.py"
+# version_scheme = "release-branch-semver"
+
+[project]
+name = "plex_playlist_manager"
+description = "A tool for managing Plex playlists"
+authors = [{name = "James Berkheimer", email = "james.berkheimer@gmail.com"}]
+license = {text = "MIT"}
+dynamic = ["version"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "colorlog",
+    "plexapi",
+]
+
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.scripts]
+main = "plex_playlist_manager.main:main"
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "tox",
+    "build",
+    "pytest",
+    "coverage"
+]
+
+[tool.setuptools]
+include-package-data = true
+platforms = ["any"]
+license-files = ["LICENSE"]
+
+[tool.setuptools.packages.find]
+exclude = ["tests"]
+namespaces = true
+where = ["src"]
+
+
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".cache",
+    ".direnv",
+    ".eggs",
+    "*.egg-info",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    "*.pyc",
+    "__pycache__",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    ".code-workspace"
+]
+select = ["B", "C", "E", "F", "N", "W", "B9"]
+ignore = [
+    "E203",
+    "E501",
+    "E722",
+    "N802",
+    "F401"
+]
+line-length = 100
