@@ -21,6 +21,7 @@ requires-python = ">=3.9"
 dependencies = [
     "colorlog",
     "plexapi",
+    "pyqt6"
 ]
 
 
@@ -29,7 +30,7 @@ file = "README.md"
 content-type = "text/markdown"
 
 [project.scripts]
-main = "plex_playlist_manager.main:main"
+ppm = "plex_playlist_manager.main:main"
 
 [project.optional-dependencies]
 dev = [
