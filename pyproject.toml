@@ -21,7 +21,9 @@ requires-python = ">=3.9"
 dependencies = [
     "colorlog",
     "plexapi",
-    "pyqt6"
+    "pyqt6",
+    "kivy[base]",
+    "flask",
 ]
 
 
@@ -31,6 +33,9 @@ content-type = "text/markdown"
 
 [project.scripts]
 ppm = "plex_playlist_manager.main:main"
+test1 = "plex_playlist_manager.scratch:test1"
+test2 = "plex_playlist_manager.scratch:test2"
+ktest = "plex_playlist_manager.guis.kivy_test:main"
 
 [project.optional-dependencies]
 dev = [

@@ -6,8 +6,8 @@ from plexapi.server import PlexServer
 from PyQt6.QtWidgets import QApplication
 
 from .authentication import PlexAuthentication
+from .guis.playlist_gui import PlaylistGUI
 from .logging import setup_logger
-from .playlist_gui import PlaylistGUI
 
 media_conveyor_root = Path.home() / ".plex_cred"
 project_root = Path(__file__).resolve().parent.parent.parent
