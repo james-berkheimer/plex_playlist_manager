@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<!-- <head>
+    <title>Plex Playlist GUI</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #1f1f1f;
+            color: #ffffff; /* You might want to change the text color so it's visible on the dark background */
+        }
+        .sidebar {
+            background-color: #343a40; /* Dark grey to match the dark theme */
+            height: 100vh; /* Full height */
+            padding: 1rem; /* Some padding */
+        }
+    </style>
+</head> -->
+<head>
+    <title>Plex Playlist GUI</title>
+    <!-- Bootstrap CSS CDN -->
+    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous"> -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <!-- Our Custom CSS -->
+    <link rel="stylesheet" href="/static/css/main_page.css"> <!-- Link to your CSS file -->
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
+    <!-- Font Awesome JS -->
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark"> <!-- Changed to dark navbar -->
+        <span class="navbar-brand mb-0 h1">Plex Playlist GUI</span>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-md-3 sidebar"> <!-- Sidebar -->
+                <div class="btn-group-vertical mb-4">
+                    <button class="btn btn-primary" id="audio-button">Audio</button>
+                    <button class="btn btn-primary" id="video-button">Video</button>
+                    <button class="btn btn-primary" id="photo-button">Photo</button>
+                </div>
+            </div>
+            <div class="col-md-9"> <!-- Main content -->
+                <h2>Playlists</h2>
+                <div class="list-group" id="playlist-items">
+                    <!-- Playlist items will be populated here -->
+                    <div class="list-group-item bg-secondary"> <!-- Changed to dark list group item -->
+                        <input class="form-check-input me-1" type="checkbox" value=""> Playlist 1
+                    </div>
+                    <div class="list-group-item bg-secondary"> <!-- Changed to dark list group item -->
+                        <input class="form-check-input me-1" type="checkbox" value=""> Playlist 2
+                    </div>
+                    <div class="list-group-item bg-secondary"> <!-- Changed to dark list group item -->
+                        <input class="form-check-input me-1" type="checkbox" value=""> Playlist 3
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

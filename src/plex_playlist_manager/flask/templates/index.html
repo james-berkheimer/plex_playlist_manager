@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Plex Playlist Manager</title>
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/main_page.css') }}"> -->
+</head>
+<body>
+    <div><a href="{{ url_for('gui') }}">Go to GUI</a></div>
+    <div><a href="{{ url_for('base') }}">Go to Base</a></div>
+    <div><a href="{{ url_for('main_2') }}">Go to Main_2</a></div>
+    <div class="container">
+        <h1>{{ server_name }}</h1>
+        <h2>Playlists:</h2>
+        <div id="accordion">
+            {% for playlist_title, playlist_data in audio_data.items() %}
+                <div class="card">
+                    <div class="card-header" id="heading{{ loop.index }}">
+                        <h5 class="mb-0">
+                            {{ playlist_title }}
+                        </h5>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

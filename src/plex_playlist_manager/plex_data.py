@@ -9,7 +9,7 @@ from pathlib import Path
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.server import PlexServer
 
-from .logging import setup_logger
+from .utils.logging import setup_logger
 
 logger = setup_logger()
 
@@ -39,17 +39,23 @@ class PlexData(PlexServer):
 
     def _get_sections(self, section_type):
         try:
-            sections = [section for section in self.library.sections() if section.type == section_type]
+            sections = [
+                section for section in self.library.sections() if section.type == section_type
+            ]
             logger.debug(f"Retrieved {len(sections)} {section_type} sections")
             return sections
         except BadRequest as e:
             logger.error(f"Failed to get sections of type {section_type} due to bad request: {e}")
             raise
         except NotFound as e:
-            logger.error(f"Failed to get sections of type {section_type} due to resource not found: {e}")
+            logger.error(
+                f"Failed to get sections of type {section_type} due to resource not found: {e}"
+            )
             raise
         except Exception as e:
-            logger.critical(f"Failed to get sections of type {section_type} due to unexpected error: {e}")
+            logger.critical(
+                f"Failed to get sections of type {section_type} due to unexpected error: {e}"
+            )
             raise
 
     def _movies(self) -> list:
@@ -138,7 +144,9 @@ class PlexData(PlexServer):
             for season in show.seasons():
                 episode_dict[f"season:{season.seasonNumber}"] = {}
                 for episode in season.episodes():
-                    episode_dict[f"season:{season.seasonNumber}"][f"episode:{episode.episodeNumber}"] = {
+                    episode_dict[f"season:{season.seasonNumber}"][
+                        f"episode:{episode.episodeNumber}"
+                    ] = {
                         "episode_name": episode.title,
                         "episode_filename": Path(episode.locations[0]).stem,
                     }
@@ -183,7 +191,9 @@ class PlexData(PlexServer):
         else:
             return {}
 
-    def compile_libraries(self, movies=False, shows=False, music=False, db_slice: slice = None) -> dict:
+    def compile_libraries(
+        self, movies=False, shows=False, music=False, db_slice: slice = None
+    ) -> dict:
         libraries_db = {}
         try:
             if movies:

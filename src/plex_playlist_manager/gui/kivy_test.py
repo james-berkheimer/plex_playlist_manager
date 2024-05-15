@@ -12,7 +12,7 @@ from plexapi.exceptions import BadRequest, NotFound
 from plexapi.server import PlexServer
 from PyQt6.QtWidgets import QApplication
 
-from ..authentication import PlexAuthentication
+from ..utils.authentication import PlexAuthentication
 
 media_conveyor_root = Path.home() / ".plex_cred"
 project_root = Path(__file__).resolve().parent.parent.parent

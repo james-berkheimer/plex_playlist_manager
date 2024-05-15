@@ -32,9 +32,11 @@ file = "README.md"
 content-type = "text/markdown"
 
 [project.scripts]
+flask_run = "plex_playlist_manager.scratch:flask_run"
 ppm = "plex_playlist_manager.main:main"
 test1 = "plex_playlist_manager.scratch:test1"
 test2 = "plex_playlist_manager.scratch:test2"
+test3 = "plex_playlist_manager.scratch:test3"
 ktest = "plex_playlist_manager.guis.kivy_test:main"
 
 [project.optional-dependencies]
