@@ -1,12 +1,11 @@
 import copy
+import inspect
 import json
 import os
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from .logging import setup_logger
-
-logger = setup_logger()
+from ..utils.logging import LOGGER
 
 
 class Authentication:
@@ -21,11 +20,11 @@ class Authentication:
 
         self.auth_file_path = plex_cred_path / "credentials.json"
         self.auth_data = auth_data if auth_data is not None else self._resolve_auth()
-        logger.info(f"Authentication initialized with auth_data: {self._mask_auth_data()}")
+        LOGGER.debug(f"Authentication initialized with auth_data: {self._mask_auth_data()}")
 
     def _resolve_auth(self) -> Dict[str, Any]:
         if not os.path.exists(self.auth_file_path):
-            logger.error(f"Credentials file not found: {self.auth_file_path}")
+            LOGGER.error(f"Credentials file not found: {self.auth_file_path}")
             raise ValueError(f"Credentials file not found: {self.auth_file_path}")
 
         with open(self.auth_file_path) as auth_file:
@@ -43,16 +42,21 @@ class Authentication:
 
 class PlexAuthentication(Authentication):
     def __init__(self, baseurl: Optional[str] = None, token: Optional[str] = None) -> None:
+        caller_frame = inspect.stack()[1]
+        caller_module = inspect.getmodule(caller_frame[0])
+        caller_name = caller_module.__name__ if caller_module else "unknown"
+        LOGGER.debug(f"PlexAuthentication was called by {caller_name}")
+
         if baseurl and token:
             auth_data = {"plex": {"baseurl": baseurl, "token": token}}
         else:
             auth_data = None
-            logger.warning(
+            LOGGER.debug(
                 "No auth data provided for PlexAuthentication, falling back to credentials.json"
             )
 
         super().__init__(auth_data=auth_data)
-        logger.info("PlexAuthentication initialized")
+        LOGGER.info("PlexAuthentication initialized")
 
     @property
     def baseurl(self) -> str:

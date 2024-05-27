@@ -1,17 +1,25 @@
 import os
 import sys
-from pathlib import Path
 
-from .utils.logging import setup_logger
+import click
 
-media_conveyor_root = Path.home() / ".plex_cred"
-project_root = Path(__file__).resolve().parent.parent.parent
-os.environ["PLEX_CRED"] = str(project_root / "tests/.plex_cred")
+from .utils.logging import LOGGER
 
 
-def main():
-    setup_logger()
-    os.environ["FLASK_APP"] = "plex_playlist_manager.flask.app"
-    os.environ["FLASK_ENV"] = "development"
+@click.command()
+@click.option("-d", "--debugger", is_flag=True, help="Runs the server with debugger.")
+def main(debugger):
+    LOGGER.info("Starting Plex Playlist Manager")
+    os.environ["FLASK_APP"] = "plex_playlist_manager.app"
+    os.environ["PLEX_CRED"] = "/home/james/code/flask_test/tests/.plex_cred"
+
+    if debugger:
+        os.environ["FLASK_DEBUG"] = "1"
+    os.system("flask run")
+
     sys.argv = ["flask", "run"]
     os.system(" ".join(sys.argv))
+
+
+if __name__ == "__main__":
+    main()

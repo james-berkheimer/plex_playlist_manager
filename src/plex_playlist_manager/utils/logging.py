@@ -35,3 +35,6 @@ def setup_logger(name=None, level=logging.INFO):
     logger.setLevel(level)
 
     return logger
+
+
+LOGGER = setup_logger("Flask Logger")

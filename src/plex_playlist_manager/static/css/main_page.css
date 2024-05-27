@@ -10,7 +10,6 @@ p {
     font-size: 1.1em;
     font-weight: 300;
     line-height: 1.7em;
-    color: #999;
 }
 
 a,
@@ -22,13 +21,14 @@ a:focus {
 }
 
 .navbar {
-    padding: 15px 10px;
+    /* padding: 15px 10px;
     background: #3b3c3d;
     border: none;
     border-radius: 0;
     margin-bottom: 40px;
-    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
-    background-color: #3b3c3d !important;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1); */
+    background-color: #333333 !important;
+    height: 60px;
 }
 
 .navbar-btn {
@@ -67,7 +67,7 @@ span {
 #sidebar {
     min-width: 250px;
     max-width: 250px;
-    background: #3b3c3d;
+    background: #333333;
     color: #fff;
     transition: all 0.3s;
 }
@@ -86,6 +86,14 @@ span {
 #sidebar.active .sidebar-header strong {
     display: block;
 }
+
+#sidebar ul {
+    list-style-type: none;
+}
+
+/* #sidebar i {
+    margin-right: 5px;
+} */
 
 #sidebar ul li a {
     text-align: left;
@@ -117,6 +125,8 @@ span {
     transform: translateX(50%);
 }
 
+/* Sidebar Styling */
+
 #sidebar .sidebar-header {
     padding: 20px;
     background: #b3934d;
@@ -138,6 +148,15 @@ span {
     display: block;
 }
 
+ul li {
+    cursor: pointer; /* Changes the cursor to a hand when hovering over the list item */
+}
+
+ul li:hover {
+    background-color: #b3934d; /* Changes the background color of the list item on hover */
+    color: #fff; /* Changes the text color of the list item on hover */
+}
+
 #sidebar ul li a:hover {
     color: #fff;
     background: #b3934d;
@@ -150,8 +169,14 @@ span {
 #sidebar ul li.active>a,
 a[aria-expanded="true"] {
     color: #fff;
-    background: #3b3c3d;
+    background: #39393a;
 }
+
+.sidebar-category-card {
+    background-color: #333333;
+}
+
+/* ###################################### */
 
 a[data-toggle="collapse"] {
     position: relative;
@@ -167,8 +192,8 @@ a[data-toggle="collapse"] {
 
 ul ul a {
     font-size: 0.9em !important;
-    padding-left: 30px !important;
-    background: #3b3c3d;
+    padding-left: 10px !important;
+    background: #333333;
 }
 
 /* here */
@@ -190,9 +215,14 @@ a.article:hover {
 
 #content {
     width: 100%;
-    padding: 20px;
+    /* padding: 20px; */
     min-height: 100vh;
     transition: all 0.3s;
+}
+
+#media_container {
+    color: #fff;
+    padding: 20px;
 }
 
 @media (max-width: 768px) {

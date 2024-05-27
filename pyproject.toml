@@ -19,11 +19,13 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
+    "click",
     "colorlog",
     "plexapi",
     "pyqt6",
     "kivy[base]",
     "flask",
+    "flask_sqlalchemy"
 ]
 
 
@@ -37,6 +39,9 @@ ppm = "plex_playlist_manager.main:main"
 test1 = "plex_playlist_manager.scratch:test1"
 test2 = "plex_playlist_manager.scratch:test2"
 test3 = "plex_playlist_manager.scratch:test3"
+test4 = "plex_playlist_manager.scratch:test4"
+test5 = "plex_playlist_manager.scratch:test5"
+test6 = "plex_playlist_manager.scratch:test6"
 ktest = "plex_playlist_manager.guis.kivy_test:main"
 
 [project.optional-dependencies]
