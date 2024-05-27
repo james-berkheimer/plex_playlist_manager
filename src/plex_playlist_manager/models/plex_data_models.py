@@ -19,10 +19,17 @@ playlist_movies = db.Table(
 )
 
 
+class PlaylistType(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    playlists = db.relationship("Playlist", backref="playlist_type", lazy=True)
+
+
 class Playlist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120), nullable=False)
-    type = db.Column(db.String(120), nullable=False)
+    playlist_type_name = db.Column(db.String(120), nullable=False)
+    playlist_type_id = db.Column(db.Integer, db.ForeignKey("playlist_type.id"), nullable=False)
     artists = db.relationship(
         "Artist",
         secondary=playlist_artists,
@@ -41,6 +48,9 @@ class Playlist(db.Model):
         lazy="subquery",
         backref=db.backref("playlists", lazy=True),
     )
+
+    def __repr__(self):
+        return f"<Playlist {self.id}, Type: {self.playlist_type.name}>"
 
 
 class Movie(db.Model):

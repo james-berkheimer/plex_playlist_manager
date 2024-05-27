@@ -18,6 +18,7 @@ def create_tables(app, db):
 
 
 def create_app():
+    print("Hello from create_app")
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///plex_playlist_manager.db"
     app.config["RECREATE_DB_ON_START"] = True

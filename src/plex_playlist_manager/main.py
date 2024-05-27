@@ -19,7 +19,3 @@ def main(debugger):
 
     sys.argv = ["flask", "run"]
     os.system(" ".join(sys.argv))
-
-
-if __name__ == "__main__":
-    main()

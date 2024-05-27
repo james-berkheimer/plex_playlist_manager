@@ -1,11 +1,13 @@
 import os
 import random
 
-# from flask import current_app
+from flask import current_app
 from plexapi.server import PlexServer
+from sqlalchemy import asc
 
+from .app import app
 from .database import db
-from .models import Playlist
+from .models.plex_data_models import Playlist, PlaylistType
 from .plex.authentication import PlexAuthentication
 from .plex.scratch_data import (
     categorize_playlists,
@@ -66,7 +68,17 @@ def test3():
 
 
 def test4():
-    playlist_data = db.session.query(Playlist).all()
+    with app.app_context():
+        playlist_types = db.session.query(PlaylistType).all()
+        playlists_by_type = {}
+        for playlist_type in playlist_types:
+            playlists_by_type[playlist_type.name] = (
+                db.session.query(Playlist).filter_by(playlist_type_id=playlist_type.id).all()
+            )
+        for playlist_type, playlists in playlists_by_type.items():
+            print(f"{playlist_type.capitalize()} playlists:")
+            for playlist in playlists:
+                print(f"\t{playlist.title}")
 
 
 def test5():

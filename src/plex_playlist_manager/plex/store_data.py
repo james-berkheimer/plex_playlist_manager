@@ -5,6 +5,7 @@ from ..models.plex_data_models import (
     Episode,
     Movie,
     Playlist,
+    PlaylistType,
     Season,
     Show,
     Track,
@@ -13,13 +14,33 @@ from ..utils.logging import LOGGER
 from .data import get_playlist_data
 
 
+def create_playlist_type(playlist_type_name):
+    existing_playlist_type = PlaylistType.query.filter_by(name=playlist_type_name).first()
+    if existing_playlist_type:
+        return existing_playlist_type
+    new_playlist_type = PlaylistType(name=playlist_type_name)
+    db.session.add(new_playlist_type)
+    db.session.commit()
+    return new_playlist_type
+
+
 def create_playlist(playlist, playlist_type):
-    new_playlist = Playlist(title=playlist["title"], type=playlist_type)
+    existing_playlist = Playlist.query.filter_by(title=playlist["title"]).first()
+    if existing_playlist:
+        return existing_playlist
+    new_playlist = Playlist(
+        title=playlist["title"],
+        playlist_type_name=playlist_type.name,
+        playlist_type_id=playlist_type.id,
+    )
     db.session.add(new_playlist)
     return new_playlist
 
 
 def create_artist(artist, playlist):
+    existing_artist = Artist.query.filter_by(name=artist["name"]).first()
+    if existing_artist:
+        return existing_artist
     new_artist = Artist(name=artist["name"])
     db.session.add(new_artist)
     playlist.artists.append(new_artist)
@@ -27,18 +48,27 @@ def create_artist(artist, playlist):
 
 
 def create_album(album, artist):
+    existing_album = Album.query.filter_by(title=album["title"], artist_id=artist.id).first()
+    if existing_album:
+        return existing_album
     new_album = Album(title=album["title"], artist=artist)
     db.session.add(new_album)
     return new_album
 
 
 def create_track(track, album):
+    existing_track = Track.query.filter_by(title=track["title"], album_id=album.id).first()
+    if existing_track:
+        return existing_track
     new_track = Track(title=track["title"], number=track["number"], album=album)
     db.session.add(new_track)
     return new_track
 
 
 def create_show(show, playlist):
+    existing_show = Show.query.filter_by(title=show["title"]).first()
+    if existing_show:
+        return existing_show
     new_show = Show(title=show["title"])
     db.session.add(new_show)
     playlist.shows.append(new_show)
@@ -46,18 +76,27 @@ def create_show(show, playlist):
 
 
 def create_season(season, show):
+    existing_season = Season.query.filter_by(title=season["title"], show_id=show.id).first()
+    if existing_season:
+        return existing_season
     new_season = Season(title=season["title"], show=show)
     db.session.add(new_season)
     return new_season
 
 
 def create_episode(episode, season):
+    existing_episode = Episode.query.filter_by(title=episode["title"], season_id=season.id).first()
+    if existing_episode:
+        return existing_episode
     new_episode = Episode(title=episode["title"], number=episode["number"], season=season)
     db.session.add(new_episode)
     return new_episode
 
 
 def create_movie(movie, playlist):
+    existing_movie = Movie.query.filter_by(title=movie["title"]).first()
+    if existing_movie:
+        return existing_movie
     new_movie = Movie(title=movie["title"], year=movie["year"])
     db.session.add(new_movie)
     playlist.movies.append(new_movie)
@@ -69,9 +108,11 @@ def store_playlist_data():
     playlist_data = get_playlist_data()
 
     for playlist_type, playlists in playlist_data.items():
+        print(f"Creating category: {playlist_type}")
+        new_category = create_playlist_type(playlist_type)
         for playlist_name, playlist in playlists.items():
             LOGGER.debug(f"Creating playlist: {playlist_name}")
-            new_playlist = create_playlist({"title": playlist_name}, playlist_type)
+            new_playlist = create_playlist({"title": playlist_name}, new_category)
 
             for artist_name, artist_data in playlist.get("artists", {}).items():
                 LOGGER.debug(f"Creating artist: {artist_name}")
