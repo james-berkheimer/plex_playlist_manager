@@ -83,8 +83,8 @@ def test4():
 
 def test5():
     playlist_data = get_playlist_data(plex_server)
-    for playlist_type, playlists in playlist_data.items():
-        for playlist_name, playlist in playlists.items():
+    for _playlist_type, playlists in playlist_data.items():
+        for _playlist_name, playlist in playlists.items():
             for artist, albums in playlist.get("artists", {}).items():
                 if artist == "38 Special":
                     print(f"create_artist({artist}, new_playlist)")

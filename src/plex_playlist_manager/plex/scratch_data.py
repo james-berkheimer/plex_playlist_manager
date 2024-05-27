@@ -93,3 +93,6 @@ def get_playlist_data(plex_server):
         "video": get_playlist_video_data(categorized_playlists["video"]),
     }
     return playlist_data
+
+
+################################################################################def create_object(model, filters, data, relationship=None):

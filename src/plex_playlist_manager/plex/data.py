@@ -89,12 +89,45 @@ def get_playlist_video_data(playlists):
     return data
 
 
+def get_playlist_photo_data(playlists):
+    data = {}
+    for playlist in playlists:
+        playlist_title = playlist.title.strip()
+        data[playlist_title] = {"photos": []}
+
+        for item in playlist.items():
+            if type(item).__name__ == "Photo":
+                photo_title = item.title.strip()
+                photo_year = item.year
+                data[playlist_title]["photos"].append(
+                    {
+                        "title": photo_title,
+                        "year": photo_year,
+                    }
+                )
+
+    return data
+
+
 def get_playlist_data():
     plex_service = current_app.config["PLEX_SERVICE"]
     plex_server = plex_service.plex_server
     categorized_playlists = categorize_playlists(plex_server.playlists())
-    playlist_data = {
-        "audio": get_playlist_audio_data(categorized_playlists["audio"]),
-        "video": get_playlist_video_data(categorized_playlists["video"]),
-    }
+    playlist_data = {}
+
+    if "audio" in categorized_playlists:
+        audio_data = get_playlist_audio_data(categorized_playlists["audio"])
+        if audio_data:
+            playlist_data["audio"] = audio_data
+
+    if "video" in categorized_playlists:
+        video_data = get_playlist_video_data(categorized_playlists["video"])
+        if video_data:
+            playlist_data["video"] = video_data
+
+    if "photo" in categorized_playlists:
+        photo_data = get_playlist_photo_data(categorized_playlists["photo"])
+        if photo_data:
+            playlist_data["photo"] = photo_data
+
     return playlist_data

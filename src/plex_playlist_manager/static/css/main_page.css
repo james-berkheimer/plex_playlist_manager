@@ -176,6 +176,14 @@ a[aria-expanded="true"] {
     background-color: #333333;
 }
 
+.playlist-card-expanded {
+    color: #b3934d;
+}
+
+.selected_playlist {
+    background-color: #b3934d;
+}
+
 /* ###################################### */
 
 a[data-toggle="collapse"] {

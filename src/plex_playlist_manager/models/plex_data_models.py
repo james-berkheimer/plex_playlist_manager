@@ -97,3 +97,9 @@ class Track(db.Model):
     title = db.Column(db.String(120), nullable=False)
     number = db.Column(db.Integer)
     album_id = db.Column(db.Integer, db.ForeignKey("album.id"), nullable=False)
+
+
+class Photo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(120), nullable=False)
+    file_path = db.Column(db.String(500), nullable=False)
