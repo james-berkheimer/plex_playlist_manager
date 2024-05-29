@@ -112,6 +112,36 @@
                 this.classList.add('selected_playlist');
             });
         });
+
+        const playlistItems = document.querySelectorAll('.playlist-item');
+        playlistItems.forEach((item) => {
+            item.addEventListener('click', () => {
+                const playlistName = item.textContent;
+                fetch(`/get_playlist?name=${encodeURIComponent(playlistName)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Check if there's an error in the response
+                        if (data.error) {
+                            alert(data.error);
+                            return;
+                        }
+
+                        // Clear the playlist_data_container
+                        const container = document.getElementById('playlist_data_container');
+                        container.innerHTML = '';
+
+                        // Create and append new elements for each item in the playlist
+                        ['artists', 'movies', 'shows', 'photos'].forEach(category => {
+                            data[category].forEach(item => {
+                                const listItem = document.createElement('li');
+                                listItem.textContent = item;
+                                container.appendChild(listItem);
+                                console.log(item);
+                            });
+                        });
+                    });
+            });
+        });
     </script>
 
 </html>

@@ -7,7 +7,9 @@ from sqlalchemy import asc
 
 from .app import app
 from .database import db
-from .models.plex_data_models import Playlist, PlaylistType
+
+# from .models.plex_data_models import Album, Playlist, PlaylistType, Track
+from .models.plex_data_models import Album, Playlist, PlaylistType, Track
 from .plex.authentication import PlexAuthentication
 from .plex.scratch_data import (
     categorize_playlists,
@@ -53,18 +55,25 @@ def test2():
 
 
 def test3():
-    artists = plex_server.search("Led Zeppelin", mediatype="artist")
-    if artists:
-        led_zeppelin = artists[0]  # Assuming the first result is the correct artist
-        songs = led_zeppelin.tracks()  # Get all tracks by Led Zeppelin
-        playlist_songs = random.sample(songs, 3)  # Select 3 random songs
-        print(playlist_songs)
-        plex_server.createPlaylist("Test Playlist", items=playlist_songs)
-        playlists = plex_server.playlists()
-    for playlist in playlists:
-        print(playlist.title)
-    else:
-        print("Artist not found")
+    name = "Zeppelin"
+    with app.app_context():
+        playlist = db.session.query(Playlist).filter_by(title=name).first()
+        if playlist:
+            print(f"Playlist: {playlist.title}")
+            print("Artists:")
+            for artist in playlist.artists:
+                print(artist.name)  # replace with the actual attribute of Artist
+        #     print("Movies:")
+        #     for movie in playlist.movies:
+        #         print(movie.title)  # replace with the actual attribute of Movie
+        #     print("Shows:")
+        #     for show in playlist.shows:
+        #         print(show.title)  # replace with the actual attribute of Show
+        #     print("Photos:")
+        #     for photo in playlist.photos:
+        #         print(photo.title)  # replace with the actual attribute of Photo
+        # else:
+        #     print("No playlist found with that name.")
 
 
 def test4():
@@ -82,18 +91,28 @@ def test4():
 
 
 def test5():
-    playlist_data = get_playlist_data(plex_server)
-    for _playlist_type, playlists in playlist_data.items():
-        for _playlist_name, playlist in playlists.items():
-            for artist, albums in playlist.get("artists", {}).items():
-                if artist == "38 Special":
-                    print(f"create_artist({artist}, new_playlist)")
-                    for album, tracks in albums["albums"].items():
-                        print(f"\tcreate_album({album}, new_artist)")
-                        for track in tracks["tracks"]:
-                            print(
-                                f"\t\tcreate_track({track['title']}, {track['number']}, new_album)"
-                            )
+    # app.config["RECREATE_DB_ON_START"] = True
+    with app.app_context():
+        playlist_types = db.session.query(PlaylistType).all()
+        playlists_by_type = {}
+        for playlist_type in playlist_types:
+            print(playlist_type.name)
+            playlists_by_type[playlist_type.name] = (
+                db.session.query(Playlist).filter_by(playlist_type_id=playlist_type.id).all()
+            )
+        # playlist = db.session.query(Playlist).first()
+        for playlist_type, playlists in playlists_by_type.items():
+            if playlist_type == "audio":
+                for playlist in playlists:
+                    if playlist.name == "Zeppelin":
+                        print(f"\tPlaylist: {playlist.name}")
+                        grouped_items = playlist.get_items_grouped_by_artist_album()
+                        for artist, albums in grouped_items.items():
+                            print(f"\t\tArtist: {artist}")
+                            for album, tracks in albums.items():
+                                print(f"\t\t\tAlbum: {album}")
+                                for track in tracks:
+                                    print(f"\t\t\t\tTrack: {track.number}: {track.title}")
 
 
 def test6():

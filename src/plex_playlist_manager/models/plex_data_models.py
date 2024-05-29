@@ -1,105 +1,152 @@
+from sqlalchemy import and_
+
 from ..database import db
 
-playlist_artists = db.Table(
-    "playlist_artists",
+playlist_item_association = db.Table(
+    "playlist_item_association",
     db.Column("playlist_id", db.Integer, db.ForeignKey("playlist.id"), primary_key=True),
-    db.Column("artist_id", db.Integer, db.ForeignKey("artist.id"), primary_key=True),
-)
-
-playlist_shows = db.Table(
-    "playlist_shows",
-    db.Column("playlist_id", db.Integer, db.ForeignKey("playlist.id"), primary_key=True),
-    db.Column("show_id", db.Integer, db.ForeignKey("show.id"), primary_key=True),
-)
-
-playlist_movies = db.Table(
-    "playlist_movies",
-    db.Column("playlist_id", db.Integer, db.ForeignKey("playlist.id"), primary_key=True),
-    db.Column("movie_id", db.Integer, db.ForeignKey("movie.id"), primary_key=True),
+    db.Column("media_item_id", db.Integer, db.ForeignKey("media_item.id"), primary_key=True),
 )
 
 
 class PlaylistType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
+    name = db.Column(db.String, nullable=False)
     playlists = db.relationship("Playlist", backref="playlist_type", lazy=True)
 
 
 class Playlist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120), nullable=False)
-    playlist_type_name = db.Column(db.String(120), nullable=False)
+    name = db.Column(db.String, nullable=False)
     playlist_type_id = db.Column(db.Integer, db.ForeignKey("playlist_type.id"), nullable=False)
-    artists = db.relationship(
-        "Artist",
-        secondary=playlist_artists,
-        lazy="subquery",
-        backref=db.backref("playlists", lazy=True),
-    )
-    movies = db.relationship(
-        "Movie",
-        secondary=playlist_movies,
-        lazy="subquery",
-        backref=db.backref("playlists", lazy=True),
-    )
-    shows = db.relationship(
-        "Show",
-        secondary=playlist_shows,
-        lazy="subquery",
-        backref=db.backref("playlists", lazy=True),
+    items = db.relationship(
+        "MediaItem", secondary=playlist_item_association, backref="playlists", lazy=True
     )
 
-    def __repr__(self):
-        return f"<Playlist {self.id}, Type: {self.playlist_type.name}>"
+    def get_items_grouped_by_artist_album(self):
+        grouped_items = {}
+        for item in self.items:
+            if isinstance(item, Track):
+                artist_name = item.artist.name
+                album_title = item.album.title
+                if artist_name not in grouped_items:
+                    grouped_items[artist_name] = {}
+                if album_title not in grouped_items[artist_name]:
+                    grouped_items[artist_name][album_title] = []
+                grouped_items[artist_name][album_title].append(item)
+        return grouped_items
+
+    def get_items_grouped_by_show_season(self):
+        grouped = {}
+        for item in self.items:
+            if isinstance(item, Episode):
+                show_title = item.show.title
+                season_title = item.season.title
+                episode_title = item.title
+
+                if show_title not in grouped:
+                    grouped[show_title] = {}
+                if season_title not in grouped[show_title]:
+                    grouped[show_title][season_title] = []
+                grouped[show_title][season_title].append(episode_title)
+        return grouped
 
 
-class Movie(db.Model):
+class MediaItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120), nullable=False)
-    year = db.Column(db.Integer)
+    type = db.Column(db.String(50))
+    __mapper_args__ = {"polymorphic_on": type, "polymorphic_identity": "media_item"}
 
 
-class Show(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120), nullable=False)
-    seasons = db.relationship("Season", backref="show", lazy=True)
+class Artist(MediaItem):
+    id = db.Column(db.Integer, db.ForeignKey("media_item.id"), primary_key=True)
+    name = db.Column(db.String, nullable=False)
+
+    albums = db.relationship(
+        "Album", back_populates="artist", lazy=True, foreign_keys="Album.artist_id"
+    )
+    tracks = db.relationship(
+        "Track", back_populates="artist", lazy=True, foreign_keys="Track.artist_id"
+    )
+
+    __mapper_args__ = {"polymorphic_identity": "artist"}
 
 
-class Season(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120), nullable=False)
-    show_id = db.Column(db.Integer, db.ForeignKey("show.id"), nullable=False)
-    episodes = db.relationship("Episode", backref="season", lazy=True)
-
-
-class Episode(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120), nullable=False)
-    number = db.Column(db.Integer)
-    season_id = db.Column(db.Integer, db.ForeignKey("season.id"), nullable=False)
-
-
-class Artist(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
-    albums = db.relationship("Album", backref="artist", lazy=True)
-
-
-class Album(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120), nullable=False)
+class Album(MediaItem):
+    id = db.Column(db.Integer, db.ForeignKey("media_item.id"), primary_key=True)
+    title = db.Column(db.String, nullable=False)
     artist_id = db.Column(db.Integer, db.ForeignKey("artist.id"), nullable=False)
-    tracks = db.relationship("Track", backref="album", lazy=True)
+
+    artist = db.relationship("Artist", back_populates="albums", foreign_keys="Album.artist_id")
+    tracks = db.relationship(
+        "Track", back_populates="album", lazy=True, foreign_keys="Track.album_id"
+    )
+
+    __mapper_args__ = {"polymorphic_identity": "album"}
 
 
-class Track(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120), nullable=False)
-    number = db.Column(db.Integer)
+class Track(MediaItem):
+    id = db.Column(db.Integer, db.ForeignKey("media_item.id"), primary_key=True)
+    title = db.Column(db.String, nullable=False)
+    number = db.Column(db.Integer, nullable=False)
     album_id = db.Column(db.Integer, db.ForeignKey("album.id"), nullable=False)
+    artist_id = db.Column(db.Integer, db.ForeignKey("artist.id"), nullable=False)
+
+    album = db.relationship("Album", back_populates="tracks", foreign_keys="Track.album_id")
+    artist = db.relationship("Artist", back_populates="tracks", foreign_keys="Track.artist_id")
+
+    __mapper_args__ = {"polymorphic_identity": "track", "properties": {"number": number}}
 
 
-class Photo(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(120), nullable=False)
+class Show(MediaItem):
+    id = db.Column(db.Integer, db.ForeignKey("media_item.id"), primary_key=True)
+    title = db.Column(db.String, nullable=False)
+
+    seasons = db.relationship(
+        "Season", back_populates="show", lazy=True, foreign_keys="Season.show_id"
+    )
+    episodes = db.relationship(
+        "Episode", back_populates="show", lazy=True, foreign_keys="Episode.show_id"
+    )
+
+    __mapper_args__ = {"polymorphic_identity": "show"}
+
+
+class Season(MediaItem):
+    id = db.Column(db.Integer, db.ForeignKey("media_item.id"), primary_key=True)
+    title = db.Column(db.String, nullable=False)
+    show_id = db.Column(db.Integer, db.ForeignKey("show.id"), nullable=False)
+
+    show = db.relationship("Show", back_populates="seasons", foreign_keys="Season.show_id")
+    episodes = db.relationship(
+        "Episode", back_populates="season", lazy=True, foreign_keys="Episode.season_id"
+    )
+
+    __mapper_args__ = {"polymorphic_identity": "season"}
+
+
+class Episode(MediaItem):
+    id = db.Column(db.Integer, db.ForeignKey("media_item.id"), primary_key=True)
+    title = db.Column(db.String, nullable=False)
+    season_id = db.Column(db.Integer, db.ForeignKey("season.id"), nullable=False)
+    show_id = db.Column(db.Integer, db.ForeignKey("show.id"), nullable=False)
+
+    season = db.relationship("Season", back_populates="episodes", foreign_keys="Episode.season_id")
+    show = db.relationship("Show", back_populates="episodes", foreign_keys="Episode.show_id")
+
+    __mapper_args__ = {"polymorphic_identity": "episode"}
+
+
+class Movie(MediaItem):
+    id = db.Column(db.Integer, db.ForeignKey("media_item.id"), primary_key=True)
+    title = db.Column(db.String, nullable=False)
+
+    __mapper_args__ = {"polymorphic_identity": "movie"}
+
+
+class Photo(MediaItem):
+    id = db.Column(db.Integer, db.ForeignKey("media_item.id"), primary_key=True)
+    title = db.Column(db.String, nullable=False)
     file_path = db.Column(db.String(500), nullable=False)
+
+    __mapper_args__ = {"polymorphic_identity": "photo"}

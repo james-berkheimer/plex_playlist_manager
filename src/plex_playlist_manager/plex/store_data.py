@@ -1,3 +1,7 @@
+import traceback
+
+from sqlalchemy.exc import SQLAlchemyError
+
 from ..app import db
 from ..models.plex_data_models import (
     Album,
@@ -13,179 +17,181 @@ from ..models.plex_data_models import (
 )
 from ..utils.logging import LOGGER
 from .data import get_playlist_data
-from .data_validation import (
-    validate_album,
-    validate_artist,
-    validate_episode,
-    validate_movie,
-    validate_photo,
-    validate_playlist,
-    validate_playlist_type,
-    validate_season,
-    validate_show,
-    validate_track,
-)
 
 
-def create_playlist_type(playlist_type_name):
-    validate_playlist_type(playlist_type_name)
-    existing_playlist_type = PlaylistType.query.filter_by(name=playlist_type_name).first()
-    if existing_playlist_type:
-        return existing_playlist_type
-    new_playlist_type = PlaylistType(name=playlist_type_name)
-    db.session.add(new_playlist_type)
-    db.session.commit()
-    return new_playlist_type
+def store_playlist_data(playlist_data):
+    try:
+        for playlist_type_name, playlists in playlist_data.items():
+            playlist_type = PlaylistType.query.filter_by(name=playlist_type_name).first()
+            if not playlist_type:
+                playlist_type = PlaylistType(name=playlist_type_name)
+                db.session.add(playlist_type)
+
+            for playlist_title, items in playlists.items():
+                playlist = Playlist.query.filter_by(
+                    name=playlist_title, playlist_type_id=playlist_type.id
+                ).first()
+                if not playlist:
+                    playlist = Playlist(name=playlist_title, playlist_type=playlist_type)
+                    db.session.add(playlist)
+
+                if playlist_type_name == "audio":
+                    store_audio_playlist(items, playlist)
+                elif playlist_type_name == "video":
+                    store_video_playlist(items, playlist)
+                elif playlist_type_name == "photo":
+                    store_photo_playlist(items, playlist)
+
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        error_info = traceback.format_exc()
+        LOGGER.error(f"Failed to store playlist data: {error_info}")
 
 
-def create_playlist(playlist, playlist_type):
-    validate_playlist(playlist)
-    existing_playlist = Playlist.query.filter_by(title=playlist["title"]).first()
-    if existing_playlist:
-        return existing_playlist
-    new_playlist = Playlist(
-        title=playlist["title"],
-        playlist_type_name=playlist_type.name,
-        playlist_type_id=playlist_type.id,
-    )
-    db.session.add(new_playlist)
-    return new_playlist
+def create_or_get_artist(artist_name):
+    if not artist_name:
+        LOGGER.error(f"Invalid artist name: {artist_name}")
+        return None
+    artist = Artist.query.filter_by(name=artist_name).first()
+    if not artist:
+        artist = Artist(name=artist_name)
+        db.session.add(artist)
+        db.session.flush()  # Ensure the artist ID is available
+    return artist
 
 
-def create_artist(artist, playlist):
-    validate_artist(artist)
-    existing_artist = Artist.query.filter_by(name=artist["name"]).first()
-    if existing_artist:
-        return existing_artist
-    new_artist = Artist(name=artist["name"])
-    db.session.add(new_artist)
-    playlist.artists.append(new_artist)
-    return new_artist
+def create_or_get_album(album_title, artist):
+    if not album_title:
+        LOGGER.error(f"Invalid album title: {album_title}")
+        return None
+    album = Album.query.filter_by(title=album_title, artist_id=artist.id).first()
+    if not album:
+        album = Album(title=album_title, artist=artist)
+        db.session.add(album)
+        db.session.flush()  # Ensure the album ID is available
+    return album
 
 
-def create_album(album, artist):
-    validate_album(album)
-    existing_album = Album.query.filter_by(title=album["title"], artist_id=artist.id).first()
-    if existing_album:
-        return existing_album
-    new_album = Album(title=album["title"], artist=artist)
-    db.session.add(new_album)
-    return new_album
+def create_or_update_track(track_data, album, artist):
+    track_title = track_data.get("title")
+    track_number = track_data.get("number")
+    if not track_title or track_number is None:
+        LOGGER.error(f"Invalid track data: {track_data}")
+        return None
+    track = Track.query.filter_by(title=track_title, album_id=album.id, artist_id=artist.id).first()
+    if not track:
+        track = Track(
+            title=track_title,
+            number=track_number,
+            album_id=album.id,
+            artist_id=artist.id,
+        )
+        db.session.add(track)
+    elif track.number != track_number:
+        track.number = track_number
+        db.session.add(track)
+    return track
 
 
-def create_track(track, album):
-    validate_track(track)
-    existing_track = Track.query.filter_by(title=track["title"], album_id=album.id).first()
-    if existing_track:
-        return existing_track
-    new_track = Track(title=track["title"], number=track["number"], album=album)
-    db.session.add(new_track)
-    return new_track
+def add_item_to_playlist(playlist, item):
+    if item and item not in playlist.items:
+        playlist.items.append(item)
 
 
-def create_show(show, playlist):
-    validate_show(show)
-    existing_show = Show.query.filter_by(title=show["title"]).first()
-    if existing_show:
-        return existing_show
-    new_show = Show(title=show["title"])
-    db.session.add(new_show)
-    playlist.shows.append(new_show)
-    return new_show
+def store_audio_playlist(data, playlist):
+    for artist_name, artist_data in data["artists"].items():
+        artist = create_or_get_artist(artist_name)
+        if not artist:
+            continue
+
+        for album_title, album_data in artist_data["albums"].items():
+            album = create_or_get_album(album_title, artist)
+            if not album:
+                continue
+
+            for track_data in album_data["tracks"]:
+                track = create_or_update_track(track_data, album, artist)
+                add_item_to_playlist(playlist, track)
 
 
-def create_season(season, show):
-    validate_season(season)
-    existing_season = Season.query.filter_by(title=season["title"], show_id=show.id).first()
-    if existing_season:
-        return existing_season
-    new_season = Season(title=season["title"], show=show)
-    db.session.add(new_season)
-    return new_season
+def store_video_playlist(data, playlist):
+    for show_title, show_data in data["shows"].items():
+        store_show_data(show_title, show_data, playlist)
+    for movie_data in data["movies"]:
+        store_movie_data(movie_data, playlist)
 
 
-def create_episode(episode, season):
-    validate_episode(episode)
-    existing_episode = Episode.query.filter_by(title=episode["title"], season_id=season.id).first()
-    if existing_episode:
-        return existing_episode
-    new_episode = Episode(title=episode["title"], number=episode["number"], season=season)
-    db.session.add(new_episode)
-    return new_episode
+def store_show_data(show_title, show_data, playlist):
+    if not show_title:
+        LOGGER.error(f"Invalid show title: {show_title}")
+        return
+
+    show = Show.query.filter_by(title=show_title).first()
+    if not show:
+        show = Show(title=show_title)
+        db.session.add(show)
+
+    for season_title, season_data in show_data["seasons"].items():
+        store_season_data(season_title, season_data, show, playlist)
 
 
-def create_movie(movie, playlist):
-    validate_movie(movie)
-    existing_movie = Movie.query.filter_by(title=movie["title"]).first()
-    if existing_movie:
-        return existing_movie
-    new_movie = Movie(title=movie["title"], year=movie["year"])
-    db.session.add(new_movie)
-    playlist.movies.append(new_movie)
-    return new_movie
+def store_season_data(season_title, season_data, show, playlist):
+    if not season_title:
+        LOGGER.error(f"Invalid season title: {season_title}")
+        return
+
+    season = Season.query.filter_by(title=season_title, show_id=show.id).first()
+    if not season:
+        season = Season(title=season_title, show_id=show.id)
+        db.session.add(season)
+
+    for episode_data in season_data["episodes"]:
+        store_episode_data(episode_data, season, show, playlist)
 
 
-def create_photo(photo, playlist):
-    validate_photo(photo)
-    existing_photo = Photo.query.filter_by(title=photo["title"]).first()
-    if existing_photo:
-        return existing_photo
-    new_photo = Photo(title=photo["title"], file_path=photo["file_path"])
-    db.session.add(new_photo)
-    playlist.photos.append(new_photo)
-    return new_photo
+def store_episode_data(episode_data, season, show, playlist):
+    episode_title = episode_data["title"]
+    if not episode_title:
+        LOGGER.error(f"Invalid episode title: {episode_title}")
+        return
+
+    episode = Episode.query.filter_by(
+        title=episode_title, season_id=season.id, show_id=show.id
+    ).first()
+    if not episode:
+        episode = Episode(title=episode_title, season_id=season.id, show_id=show.id)
+        db.session.add(episode)
+    add_item_to_playlist(playlist, episode)
 
 
-def store_artist_data(playlist_data, new_playlist):
-    for artist_name, artist_data in playlist_data.get("artists", {}).items():
-        LOGGER.debug(f"Creating artist: {artist_name}")
-        new_artist = create_artist({"name": artist_name}, new_playlist)
-        for album_name, album_data in artist_data["albums"].items():
-            LOGGER.debug(f"Creating album: {album_name}")
-            new_album = create_album({"title": album_name}, new_artist)
-            for track in album_data["tracks"]:
-                LOGGER.debug(f"Creating track: {track['title']}")
-                create_track({"title": track["title"], "number": track["number"]}, new_album)
+def store_movie_data(movie_data, playlist):
+    movie_title = movie_data["title"]
+    if not movie_title:
+        LOGGER.error(f"Invalid movie title: {movie_title}")
+        return
+
+    movie = Movie.query.filter_by(title=movie_title).first()
+    if not movie:
+        movie = Movie(title=movie_title)
+        db.session.add(movie)
+    add_item_to_playlist(playlist, movie)
 
 
-def store_show_data(playlist_data, new_playlist):
-    for show_name, show_data in playlist_data.get("shows", {}).items():
-        LOGGER.debug(f"Creating show: {show_name}")
-        new_show = create_show({"title": show_name}, new_playlist)
-        for season_name, season_data in show_data["seasons"].items():
-            LOGGER.debug(f"Creating season: {season_name}")
-            new_season = create_season({"title": season_name}, new_show)
-            for episode in season_data["episodes"]:
-                LOGGER.debug(f"Creating episode: {episode['title']}")
-                create_episode({"title": episode["title"], "number": episode["number"]}, new_season)
+def store_photo_playlist(data, playlist):
+    for photo_data in data["photos"]:
+        photo_title = photo_data["title"]
+        if not photo_title:
+            LOGGER.error(f"Invalid photo title: {photo_title}")
+            continue
+
+        photo = Photo.query.filter_by(title=photo_title).first()
+        if not photo:
+            photo = Photo(title=photo_title, file_path=photo_data["file_path"])
+            db.session.add(photo)
+        add_item_to_playlist(playlist, photo)
 
 
-def store_movie_data(playlist_data, new_playlist):
-    for movie in playlist_data.get("movies", []):
-        LOGGER.debug(f"Creating movie: {movie['title']}")
-        create_movie({"title": movie["title"], "year": movie["year"]}, new_playlist)
-
-
-def store_photo_data(playlist_data, new_playlist):
-    for photo in playlist_data.get("photos", []):
-        LOGGER.debug(f"Creating photo: {photo['title']}")
-        create_photo({"title": photo["title"], "file_path": photo["file_path"]}, new_playlist)
-
-
-def store_playlist_data():
-    LOGGER.info("Storing playlist data...")
+def get_and_store_playlist_data():
     playlist_data = get_playlist_data()
-
-    for playlist_type, playlists in playlist_data.items():
-        print(f"Creating category: {playlist_type}")
-        new_category = create_playlist_type(playlist_type)
-        for playlist_name, playlist in playlists.items():
-            LOGGER.debug(f"Creating playlist: {playlist_name}")
-            new_playlist = create_playlist({"title": playlist_name}, new_category)
-            store_artist_data(playlist, new_playlist)
-            store_show_data(playlist, new_playlist)
-            store_movie_data(playlist, new_playlist)
-            store_photo_data(playlist, new_playlist)
-
-    db.session.commit()
-    LOGGER.info("Playlist data stored successfully.")
+    store_playlist_data(playlist_data)

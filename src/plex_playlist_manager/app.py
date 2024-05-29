@@ -3,7 +3,9 @@ from flask import Flask
 from .apps.home.routes import index_bp, playlist_manager_bp
 from .database import db
 from .plex import PlexService
-from .plex.store_data import store_playlist_data
+
+# from .plex.store_data import store_playlist_data
+from .plex.store_data import get_and_store_playlist_data
 from .utils.logging import LOGGER
 
 
@@ -18,7 +20,6 @@ def create_tables(app, db):
 
 
 def create_app():
-    print("Hello from create_app")
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///plex_playlist_manager.db"
     app.config["RECREATE_DB_ON_START"] = True
@@ -47,7 +48,8 @@ def create_app():
 
     # Store playlist data in the database
     with app.app_context():
-        store_playlist_data()
+        # store_playlist_data()
+        get_and_store_playlist_data()
 
     # Register the blueprint with the app
     app.register_blueprint(index_bp)
