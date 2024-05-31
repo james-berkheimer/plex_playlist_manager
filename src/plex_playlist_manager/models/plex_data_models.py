@@ -23,6 +23,28 @@ class Playlist(db.Model):
         "MediaItem", secondary=playlist_item_association, backref="playlists", lazy=True
     )
 
+    def to_dict(self):
+        playlist_dict = {
+            "id": self.id,
+            "name": self.name,
+            "playlist_type_id": self.playlist_type_id,
+            "items": [],
+        }
+
+        # Use the appropriate method based on the type of items
+        if any(isinstance(item, Track) for item in self.items):
+            playlist_dict["items"] = self.get_items_grouped_by_artist_album()
+        elif any(isinstance(item, Episode) for item in self.items):
+            playlist_dict["items"] = self.get_items_grouped_by_show_season()
+        elif any(isinstance(item, Movie) for item in self.items):
+            playlist_dict["items"] = self.get_items_grouped_by_movie()
+        elif any(isinstance(item, Photo) for item in self.items):
+            playlist_dict["items"] = self.get_items_grouped_by_photo()
+        else:
+            playlist_dict["items"] = [item.title for item in self.items]
+
+        return playlist_dict
+
     def get_items_grouped_by_artist_album(self):
         grouped_items = {}
         for item in self.items:
@@ -33,7 +55,7 @@ class Playlist(db.Model):
                     grouped_items[artist_name] = {}
                 if album_title not in grouped_items[artist_name]:
                     grouped_items[artist_name][album_title] = []
-                grouped_items[artist_name][album_title].append(item)
+                grouped_items[artist_name][album_title].append(item.title)
         return grouped_items
 
     def get_items_grouped_by_show_season(self):
@@ -43,12 +65,33 @@ class Playlist(db.Model):
                 show_title = item.show.title
                 season_title = item.season.title
                 episode_title = item.title
+                print(f"Show: {show_title}, \nSeason: {season_title}, \nEpisode: {episode_title}")
 
                 if show_title not in grouped:
                     grouped[show_title] = {}
                 if season_title not in grouped[show_title]:
                     grouped[show_title][season_title] = []
                 grouped[show_title][season_title].append(episode_title)
+        return grouped
+
+    def get_items_grouped_by_movie(self):
+        grouped = {}
+        for item in self.items:
+            if isinstance(item, Movie):
+                release_year = item.year
+                if release_year not in grouped:
+                    grouped[release_year] = []
+                grouped[release_year].append(item.title)
+        return grouped
+
+    def get_items_grouped_by_photo(self):
+        grouped = {}
+        for item in self.items:
+            if isinstance(item, Photo):
+                photo_title = item.title
+                if photo_title not in grouped:
+                    grouped[photo_title] = []
+                grouped[photo_title].append(item.file_path)
         return grouped
 
 
@@ -140,6 +183,7 @@ class Episode(MediaItem):
 class Movie(MediaItem):
     id = db.Column(db.Integer, db.ForeignKey("media_item.id"), primary_key=True)
     title = db.Column(db.String, nullable=False)
+    year = db.Column(db.Integer, nullable=False)
 
     __mapper_args__ = {"polymorphic_identity": "movie"}
 

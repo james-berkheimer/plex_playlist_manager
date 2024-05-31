@@ -2,8 +2,6 @@ from flask import Blueprint, current_app, jsonify, render_template, request
 from sqlalchemy import asc
 
 from ...database import db
-
-# from ...models.plex_data_models import Playlist, PlaylistType
 from ...models.plex_data_models import Playlist, PlaylistType
 
 index_bp = Blueprint("index", __name__)
@@ -19,7 +17,7 @@ def get_playlist_by_type(playlist_types):
     return playlists_by_type
 
 
-@playlist_manager_bp.route("/main_2")
+@playlist_manager_bp.route("/")
 def playlist_manager():
     playlist_types = db.session.query(PlaylistType).all()
     playlists_by_type = get_playlist_by_type(playlist_types)
@@ -33,14 +31,15 @@ def playlist_manager():
 def get_playlist():
     playlist_name = request.args.get("name").strip()
     print(f"Playlist name: {playlist_name}")
-    playlist = db.session.query(Playlist).filter_by(title=playlist_name).first()
+    playlist = db.session.query(Playlist).filter_by(name=playlist_name).first()
+    print(playlist.to_dict())
     if playlist is None:
         return jsonify({"error": "Playlist not found"}), 404
     return jsonify(playlist.to_dict())
 
 
-@index_bp.route("/")
-def index():
-    plex_service = current_app.config["PLEX_SERVICE"]
-    server_name = plex_service.server_name
-    return render_template("index.html", server_name=server_name)
+# @index_bp.route("/")
+# def index():
+#     plex_service = current_app.config["PLEX_SERVICE"]
+#     server_name = plex_service.server_name
+#     return render_template("index.html", server_name=server_name)

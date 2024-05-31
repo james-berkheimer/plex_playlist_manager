@@ -98,11 +98,11 @@ def get_playlist_photo_data(playlists):
         for item in playlist.items():
             if type(item).__name__ == "Photo":
                 photo_title = item.title.strip()
-                photo_year = item.year
+                photo_path = item.locations[0]
                 data[playlist_title]["photos"].append(
                     {
                         "title": photo_title,
-                        "year": photo_year,
+                        "path": photo_path,
                     }
                 )
 

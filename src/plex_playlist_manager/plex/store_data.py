@@ -167,13 +167,14 @@ def store_episode_data(episode_data, season, show, playlist):
 
 def store_movie_data(movie_data, playlist):
     movie_title = movie_data["title"]
+    movie_year = movie_data["year"]
     if not movie_title:
         LOGGER.error(f"Invalid movie title: {movie_title}")
         return
 
-    movie = Movie.query.filter_by(title=movie_title).first()
+    movie = Movie.query.filter_by(title=movie_title, year=movie_year).first()
     if not movie:
-        movie = Movie(title=movie_title)
+        movie = Movie(title=movie_title, year=movie_year)
         db.session.add(movie)
     add_item_to_playlist(playlist, movie)
 
@@ -187,7 +188,7 @@ def store_photo_playlist(data, playlist):
 
         photo = Photo.query.filter_by(title=photo_title).first()
         if not photo:
-            photo = Photo(title=photo_title, file_path=photo_data["file_path"])
+            photo = Photo(title=photo_title, file_path=photo_data["path"])
             db.session.add(photo)
         add_item_to_playlist(playlist, photo)
 

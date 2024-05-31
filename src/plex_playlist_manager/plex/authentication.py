@@ -56,7 +56,8 @@ class PlexAuthentication(Authentication):
             )
 
         super().__init__(auth_data=auth_data)
-        LOGGER.info("PlexAuthentication initialized")
+        # LOGGER.info("PlexAuthentication initialized")
+        LOGGER.info(f"PlexAuthentication initialized by {caller_name}")
 
     @property
     def baseurl(self) -> str:

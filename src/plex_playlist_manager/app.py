@@ -43,8 +43,13 @@ def create_app():
     # Initialize Plex Service
     plex_service = PlexService()
 
+    # Get the server name
+    # server_name = plex_service.server_name
+    # print(f"Server Name: {server_name}")
+
     # Attach Plex Service to the app instance
     app.config["PLEX_SERVICE"] = plex_service
+    # app.config["SERVER_NAME"] = server_name
 
     # Store playlist data in the database
     with app.app_context():

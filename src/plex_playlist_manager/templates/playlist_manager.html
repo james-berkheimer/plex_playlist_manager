@@ -4,11 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Main_2</title>
+    <title>Plex Playlist Manager</title>
     <!-- Imports -->
     {% include 'css_imports.html' %}
     {% include 'js_imports.html' %}
-    </head>
+</head>
 <body>
     <div class="wrapper">
         <!-- Sidebar  -->
@@ -28,6 +28,10 @@
                                             <i class="fas fa-music" style="margin-right: 10px;"></i>
                                         {% elif playlist_type == 'video' %}
                                             <i class="fas fa-video" style="margin-right: 10px;"></i>
+                                        {% elif playlist_type == 'photo' %}
+                                            <i class="fas fa-image" style="margin-right: 10px;"></i>
+                                        {% else %}
+                                            <i class="fas fa-list" style="margin-right: 10px;"></i>
                                         {% endif %}
                                         {{ playlist_type|capitalize }}
                                     </p>
@@ -38,7 +42,7 @@
                                     <ul>
                                         {% for playlist in playlists %}
                                             <div class="playlist-item">
-                                                <li>{{ playlist.title }}</li>
+                                                <li>{{ playlist.name }}</li>
                                             </div>
                                         {% endfor %}
                                     </ul>
@@ -52,7 +56,6 @@
 
         <!-- Page Content  -->
         <div id="content">
-
             <!-- Navbar content here -->
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <div class="container-fluid">
@@ -63,7 +66,7 @@
             </nav>
             <!-- Add Media here -->
             <div id="media_container">
-                <div id="playlist_data_container"></div>
+                <div id="playlist_data_container" class="accordion"></div>
             </div>
         </div>
     </div>
@@ -74,75 +77,56 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
     <!-- Bootstrap JS -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
-    <!-- Handlebars.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"></script>
+
     <!-- Our Custom Scripts -->
     <script>
         $(document).ready(function() {
-            // Add click event to all playlist items
-            $('.playlist-container li').click(function() {
-                // Get the name of the playlist
-                var playlistName = $(this).text();
+            // Handle playlist item click event
+            $('.playlist-item li').click(function() {
+                var playlistName = $(this).text().trim();
 
-                // Display the name in the playlist_data_container div
-                $('#playlist_data_container').text(playlistName);
-            });
-
-            // Add class to the text when the card is expanded
-            $('.sidebar-playlist-type-card').on('show.bs.collapse', function () {
-                $(this).find('.playlist-type-card-header').addClass('playlist-card-expanded');
-            });
-
-            // Remove class from the text when the card is collapsed
-            $('.sidebar-playlist-type-card').on('hide.bs.collapse', function () {
-                $(this).find('.playlist-type-card-header').removeClass('playlist-card-expanded');
-            });
-        });
-
-        var playlists = document.querySelectorAll('.playlist-item li');
-
-        playlists.forEach(function(playlist) {
-            playlist.addEventListener('click', function() {
-                // Remove the 'selected' class from all playlists
-                playlists.forEach(function(pl) {
-                    pl.classList.remove('selected_playlist');
+                // Fetch playlist data from the server
+                $.getJSON('/get_playlist', { name: playlistName }, function(data) {
+                    if (data.error) {
+                        alert('Playlist not found');
+                    } else {
+                        renderPlaylistData(data.items);
+                    }
                 });
-
-                // Add the 'selected' class to the clicked playlist
-                this.classList.add('selected_playlist');
             });
-        });
 
-        const playlistItems = document.querySelectorAll('.playlist-item');
-        playlistItems.forEach((item) => {
-            item.addEventListener('click', () => {
-                const playlistName = item.textContent;
-                fetch(`/get_playlist?name=${encodeURIComponent(playlistName)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Check if there's an error in the response
-                        if (data.error) {
-                            alert(data.error);
-                            return;
-                        }
+            // Function to render playlist data
+            function renderPlaylistData(items) {
+                var container = $('#playlist_data_container');
+                container.empty();
 
-                        // Clear the playlist_data_container
-                        const container = document.getElementById('playlist_data_container');
-                        container.innerHTML = '';
+                // Render grouped items as text
+                var renderedData = renderNestedData(items, 0);
+                container.append(renderedData);
+            }
 
-                        // Create and append new elements for each item in the playlist
-                        ['artists', 'movies', 'shows', 'photos'].forEach(category => {
-                            data[category].forEach(item => {
-                                const listItem = document.createElement('li');
-                                listItem.textContent = item;
-                                container.appendChild(listItem);
-                                console.log(item);
-                            });
+            // Function to render nested data
+            function renderNestedData(data, level) {
+                var html = '<ul>';
+                for (var key in data) {
+                    html += `<li style="margin-left: ${level * 20}px"><strong>${key}:</strong>`;
+                    if (Array.isArray(data[key])) {
+                        html += `<ul>`;
+                        data[key].forEach(item => {
+                            html += `<li style="margin-left: ${(level + 1) * 20}px">${item}</li>`;
                         });
-                    });
-            });
+                        html += `</ul>`;
+                    } else if (typeof data[key] === 'object' && data[key] !== null) {
+                        html += renderNestedData(data[key], level + 1);
+                    } else {
+                        html += ` ${data[key]}`;
+                    }
+                    html += `</li>`;
+                }
+                html += '</ul>';
+                return html;
+            }
         });
     </script>
-
+</body>
 </html>
-
