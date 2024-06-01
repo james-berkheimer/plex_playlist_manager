@@ -1,3 +1,6 @@
+import re
+from pprint import pprint
+
 from flask import current_app
 
 
@@ -14,34 +17,51 @@ def categorize_playlists(playlists):
         return None
 
 
+def get_sorted_artists(playlist):
+    sorted_artists = []
+
+    if playlist is not None:
+        artists = {}
+        for item in playlist.items():
+            cleaned_name = re.sub(r"\W+", "", item.grandparentTitle).lower()
+            artists[cleaned_name] = item.grandparentTitle
+        for artist in sorted(artists.keys()):
+            sorted_artists.append(artists[artist])
+    return sorted_artists
+
+
 def get_playlist_audio_data(playlists):
     data = {}
     for playlist in playlists:
         playlist_title = playlist.title.strip()
         data[playlist_title] = {"artists": {}}
 
-        for item in playlist.items():
-            if type(item).__name__ == "Track":
-                artist_name = item.grandparentTitle.strip()
-                if artist_name not in data[playlist_title]["artists"]:
-                    data[playlist_title]["artists"][artist_name] = {"albums": {}}
+        sorted_artists = get_sorted_artists(playlist)
+        # print(f"\tPlaylist Title: {playlist_title}")
+        # print(f"\tSorted Artists: {sorted_artists}")
 
-                album_title = item.parentTitle.strip()
-                if album_title not in data[playlist_title]["artists"][artist_name]["albums"]:
-                    data[playlist_title]["artists"][artist_name]["albums"][album_title] = {
-                        "tracks": []
-                    }
+        for artist_name in sorted_artists:
+            if artist_name not in data[playlist_title]["artists"]:
+                data[playlist_title]["artists"][artist_name] = {"albums": {}}
 
-                track_title = item.title.strip()
-                track_number = item.trackNumber
-                data[playlist_title]["artists"][artist_name]["albums"][album_title][
-                    "tracks"
-                ].append(
-                    {
-                        "title": track_title,
-                        "number": track_number,
-                    }
-                )
+            for item in playlist.items():
+                if type(item).__name__ == "Track" and item.grandparentTitle.strip() == artist_name:
+                    album_title = item.parentTitle.strip()
+                    if album_title not in data[playlist_title]["artists"][artist_name]["albums"]:
+                        data[playlist_title]["artists"][artist_name]["albums"][album_title] = {
+                            "tracks": []
+                        }
+
+                    track_title = item.title.strip()
+                    track_number = item.trackNumber
+                    data[playlist_title]["artists"][artist_name]["albums"][album_title][
+                        "tracks"
+                    ].append(
+                        {
+                            "title": track_title,
+                            "number": track_number,
+                        }
+                    )
 
     return data
 
@@ -117,6 +137,9 @@ def get_playlist_data():
 
     if "audio" in categorized_playlists:
         audio_data = get_playlist_audio_data(categorized_playlists["audio"])
+        # pprint(audio_data.keys())
+        # tmp = audio_data["Shower Songs"]["artists"]
+        # pprint(tmp.keys())
         if audio_data:
             playlist_data["audio"] = audio_data
 

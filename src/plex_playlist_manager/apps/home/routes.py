@@ -30,12 +30,13 @@ def playlist_manager():
 @index_bp.route("/get_playlist")
 def get_playlist():
     playlist_name = request.args.get("name").strip()
-    print(f"Playlist name: {playlist_name}")
+    # print(f"Playlist name: {playlist_name}")
     playlist = db.session.query(Playlist).filter_by(name=playlist_name).first()
-    print(playlist.to_dict())
     if playlist is None:
         return jsonify({"error": "Playlist not found"}), 404
-    return jsonify(playlist.to_dict())
+    playlist_data = playlist.to_dict()
+    playlist_data["items"] = list(playlist_data["items"].items())  # Convert dict to list of tuples
+    return jsonify(playlist_data)
 
 
 # @index_bp.route("/")

@@ -65,8 +65,6 @@ class Playlist(db.Model):
                 show_title = item.show.title
                 season_title = item.season.title
                 episode_title = item.title
-                print(f"Show: {show_title}, \nSeason: {season_title}, \nEpisode: {episode_title}")
-
                 if show_title not in grouped:
                     grouped[show_title] = {}
                 if season_title not in grouped[show_title]:

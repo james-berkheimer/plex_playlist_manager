@@ -57,7 +57,7 @@ def create_or_get_artist(artist_name):
     if not artist:
         artist = Artist(name=artist_name)
         db.session.add(artist)
-        db.session.flush()  # Ensure the artist ID is available
+        db.session.flush()
     return artist
 
 
@@ -69,7 +69,7 @@ def create_or_get_album(album_title, artist):
     if not album:
         album = Album(title=album_title, artist=artist)
         db.session.add(album)
-        db.session.flush()  # Ensure the album ID is available
+        db.session.flush()
     return album
 
 
