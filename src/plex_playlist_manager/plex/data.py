@@ -137,9 +137,6 @@ def get_playlist_data():
 
     if "audio" in categorized_playlists:
         audio_data = get_playlist_audio_data(categorized_playlists["audio"])
-        # pprint(audio_data.keys())
-        # tmp = audio_data["Shower Songs"]["artists"]
-        # pprint(tmp.keys())
         if audio_data:
             playlist_data["audio"] = audio_data
 
@@ -150,6 +147,7 @@ def get_playlist_data():
 
     if "photo" in categorized_playlists:
         photo_data = get_playlist_photo_data(categorized_playlists["photo"])
+        print(photo_data)
         if photo_data:
             playlist_data["photo"] = photo_data
 

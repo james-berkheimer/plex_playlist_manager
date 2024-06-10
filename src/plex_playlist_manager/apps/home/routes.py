@@ -1,3 +1,5 @@
+import time
+
 from flask import Blueprint, current_app, jsonify, render_template, request
 from sqlalchemy import asc
 
@@ -29,18 +31,17 @@ def playlist_manager():
 
 @index_bp.route("/get_playlist")
 def get_playlist():
+    start_time = time.time()
+
     playlist_name = request.args.get("name").strip()
-    # print(f"Playlist name: {playlist_name}")
     playlist = db.session.query(Playlist).filter_by(name=playlist_name).first()
     if playlist is None:
         return jsonify({"error": "Playlist not found"}), 404
     playlist_data = playlist.to_dict()
     playlist_data["items"] = list(playlist_data["items"].items())  # Convert dict to list of tuples
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Execution time: {elapsed_time} seconds")
+
     return jsonify(playlist_data)
-
-
-# @index_bp.route("/")
-# def index():
-#     plex_service = current_app.config["PLEX_SERVICE"]
-#     server_name = plex_service.server_name
-#     return render_template("index.html", server_name=server_name)

@@ -22,8 +22,6 @@ dependencies = [
     "click",
     "colorlog",
     "plexapi",
-    "pyqt6",
-    "kivy[base]",
     "flask",
     "flask_sqlalchemy"
 ]
