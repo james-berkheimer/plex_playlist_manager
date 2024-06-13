@@ -1,0 +1,22 @@
+.wrapper {
+    display: flex;
+    align-items: stretch;
+}
+
+#content {
+    width: 100%;
+    min-height: 100vh;
+    transition: all 0.3s;
+}
+
+.line {
+    width: 100%;
+    height: 1px;
+    border-bottom: 1px dashed #ddd;
+    margin: 40px 0;
+}
+
+#media_container {
+    color: var(--text-color);
+    padding: 20px;
+}

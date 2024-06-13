@@ -11,62 +11,53 @@
 </head>
 <body>
     <div class="wrapper">
-        <!-- Sidebar  -->
-        <nav id="sidebar">
-            <div class="sidebar-header">
+        <div class="sidebar-container">
+            <header class="sidebar-header">
                 <h3>Plex Playlist Manager</h3>
-                <strong>BS</strong>
-            </div>
-            <ul class="list-unstyled components">
-                <div class="sidebar">
-                    {% for playlist_type, playlists in playlists_by_type.items() %}
-                        <div class="sidebar-playlist-type-card">
-                            <div class="playlist-type-card-header" id="heading{{ loop.index }}" data-toggle="collapse" data-target="#collapse{{ loop.index }}" aria-expanded="true" aria-controls="collapse{{ loop.index }}">
-                                <h5 class="mb-0">
-                                    <p>
-                                        {% if playlist_type == 'audio' %}
-                                            <i class="fas fa-music" style="margin-right: 10px;"></i>
-                                        {% elif playlist_type == 'video' %}
-                                            <i class="fas fa-video" style="margin-right: 10px;"></i>
-                                        {% elif playlist_type == 'photo' %}
-                                            <i class="fas fa-image" style="margin-right: 10px;"></i>
-                                        {% else %}
-                                            <i class="fas fa-list" style="margin-right: 10px;"></i>
-                                        {% endif %}
-                                        {{ playlist_type|capitalize }}
-                                    </p>
-                                </h5>
-                            </div>
+            </header>
+
+            <aside class="sidebar">
+                <ul class="sidebar-category-container list-unstyled components">
+                    {% for playlist_type, playlists in categorized_playlists.items() %}
+                        <li class="sidebar-category-list">
+                            <h5 class="sidebar-category-card" data-toggle="collapse" data-target="#collapse{{ loop.index }}" aria-expanded="false" aria-controls="collapse{{ loop.index }}">
+                                {% if playlist_type == 'audio' %}
+                                    <i class="fas fa-music" style="margin-right: 10px;"></i>
+                                {% elif playlist_type == 'video' %}
+                                    <i class="fas fa-video" style="margin-right: 10px;"></i>
+                                {% elif playlist_type == 'photo' %}
+                                    <i class="fas fa-image" style="margin-right: 10px;"></i>
+                                {% else %}
+                                    <i class="fas fa-list" style="margin-right: 10px;"></i>
+                                {% endif %}
+                                {{ playlist_type|capitalize }}
+                            </h5>
+
                             <div id="collapse{{ loop.index }}" class="collapse" aria-labelledby="heading{{ loop.index }}" data-parent=".sidebar">
                                 <div class="playlist-container">
-                                    <ul>
+                                    <ul id="sidebar-playlist-list" class="components">
                                         {% for playlist in playlists %}
-                                            <div class="playlist-item">
-                                                <li>{{ playlist.name }}</li>
+                                            <div class="playlist-item" style="-webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;">
+                                                <li class="playlist-item-li" data-playlist-type="{{ playlist_type }}">{{ playlist }}</li>
                                             </div>
                                         {% endfor %}
                                     </ul>
                                 </div>
                             </div>
-                        </div>
+                        </li>
                     {% endfor %}
-                </div>
-            </ul>
-        </nav>
-
-        <!-- Page Content  -->
-        <div id="content">
-            <!-- Navbar content here -->
-            <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                <div class="container-fluid">
+                </ul>
+            </aside>
+        </div>
+        <div class="main-container">
+            <nav class="main-topbar navbar navbar-expand-lg navbar-light">
+                <div class="search-box container-fluid">
                     <form class="form-inline my-2 my-lg-0 ml-auto">
                         <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
                     </form>
                 </div>
             </nav>
-            <!-- Add Playlist contents -->
-            <div id="media_container">
-                <div id="playlist_data_container" class="accordion"></div>
+            <div id="playlist_contents" class="playlist_contents">
             </div>
         </div>
     </div>
@@ -80,57 +71,154 @@
 
     <!-- Our Custom Scripts -->
     <script>
-        $(document).ready(function() {
-            // Handle playlist item click event
-            $('.playlist-item li').click(function() {
-                var playlistName = $(this).text().trim();
+        document.addEventListener('DOMContentLoaded', function() {
+            var playlistItems = document.querySelectorAll('.playlist-item-li');
+            var playlistContents = document.getElementById('playlist_contents');
+            playlistItems.forEach(function(playlistItem) {
+                playlistItem.addEventListener('click', function() {
+                    // Remove the selected class from all items
+                    playlistItems.forEach(function(item) {
+                        item.classList.remove('selected');
+                    });
 
-                // Fetch playlist data from the server
-                $.getJSON('/get_playlist', { name: playlistName }, function(data) {
-                    if (data.error) {
-                        alert('Playlist not found');
-                    } else {
-                        renderPlaylistData(data.items);
-                    }
+                    // Add the selected class to the clicked item
+                    this.classList.add('selected');
+
+                    // Clear the playlist_contents div
+                    playlistContents.innerHTML = '';
+
+                    // Get the playlist title and type
+                    var playlistTitle = this.textContent;
+                    var playlistType = this.dataset.playlistType;
+
+                    // Send a request to the server with the playlist title and type
+                    $.ajax({
+                        url: '/get_playlist_items',
+                        type: 'POST',
+                        data: {
+                            'playlist_title': playlistTitle,
+                            'playlist_type': playlistType
+                        },
+                        success: function(data) {
+                            // Handle each type of data differently
+                            if (playlistType === 'video') {
+                                handleVideoData(data);
+                            } else if (playlistType === 'audio') {
+                                handleAudioData(data);
+                            } else if (playlistType === 'photo') {
+                                handlePhotoData(data);
+                            }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            console.error("AJAX call failed: " + textStatus + ", " + errorThrown);
+                        }
+                    });
                 });
             });
-
-            // Function to render playlist data
-            function renderPlaylistData(items) {
-                var container = $('#playlist_data_container');
-                container.empty();
-
-                // Render grouped items as text
-                var renderedData = renderNestedData(items, 0);
-                container.append(renderedData);
-            }
-
-            // Function to render nested data
-            function renderNestedData(data, level) {
-                var html = '<ul>';
-                // data is now a list of tuples
-                data.forEach(function(item) {
-                    var key = item[0];
-                    var value = item[1];
-                    console.log(key);
-                    html += `<li style="margin-left: ${level * 20}px"><strong>${key}:</strong>`;
-                    if (Array.isArray(value)) {
-                        html += `<ul>`;
-                        value.forEach(function(subItem) {
-                            html += `<li style="margin-left: ${(level + 1) * 20}px">${subItem}</li>`;
-                        });
-                        html += `</ul>`;
-                    } else if (typeof value === 'object' && value !== null) {
-                        html += renderNestedData(Object.entries(value), level + 1);
-                    } else {
-                        html += ` ${value}`;
-                    }
-                    html += `</li>`;
-                });
-                html += '</ul>';
-                return html;
-            }
         });
+
+        function handleVideoData(data) {
+            var playlistContents = document.getElementById('playlist_contents');
+
+            for (var videoType in data) {
+                var videoItems = data[videoType];
+                if (videoType === "Episode") {
+                    for (var showTitle in videoItems) {
+                        var showListItem = document.createElement('li');
+                        showListItem.textContent = showTitle;
+                        var seasonsList = document.createElement('ul');
+                        showListItem.appendChild(seasonsList);
+
+                        var seasons = videoItems[showTitle];
+                        for (var seasonNumber in seasons) {
+                            var seasonListItem = document.createElement('li');
+                            seasonListItem.textContent = seasonNumber;
+                            var episodesList = document.createElement('ul');
+                            seasonListItem.appendChild(episodesList);
+                            seasonsList.appendChild(seasonListItem);
+
+                            var episodes = seasons[seasonNumber];
+                            episodes.forEach(function(episode) {
+                                var episodeTitle = episode[0];
+                                var episodeNumber = episode[1];
+                                var episodeListItem = document.createElement('li');
+                                episodeListItem.textContent = episodeNumber + ": " + episodeTitle;
+                                episodesList.appendChild(episodeListItem);
+                            });
+                        }
+                        playlistContents.appendChild(showListItem);
+                    }
+                } else if (videoType === "Movie") {
+                    for (var movieTitle in videoItems) {
+                        var year = videoItems[movieTitle];
+                        var listItem = document.createElement('li');
+                        listItem.textContent = movieTitle + " (" + year + ")";
+                        playlistContents.appendChild(listItem);
+                    }
+                }
+            }
+        }
+
+        function handleAudioData(data) {
+            var playlistContents = document.getElementById('playlist_contents');
+
+            for (var artistName in data) {
+                var artistListItem = document.createElement('li');
+                artistListItem.textContent = artistName;
+                var albumsList = document.createElement('ul');
+                artistListItem.appendChild(albumsList);
+
+                var albums = data[artistName];
+                for (var albumTitle in albums) {
+                    var albumListItem = document.createElement('li');
+                    albumListItem.textContent = albumTitle;
+                    var tracksList = document.createElement('ul');
+                    albumListItem.appendChild(tracksList);
+                    albumsList.appendChild(albumListItem);
+
+                    var tracks = albums[albumTitle];
+                    tracks.forEach(function(track) {
+                        var trackTitle = track[0];
+                        var trackNumber = track[1];
+                        var trackListItem = document.createElement('li');
+                        trackListItem.textContent = trackNumber + ": " + trackTitle;
+                        tracksList.appendChild(trackListItem);
+                    });
+                }
+                playlistContents.appendChild(artistListItem);
+            }
+        }
+
+        function handlePhotoData(data) {
+            var playlistContents = document.getElementById('playlist_contents');
+
+            // Clear previous contents
+            playlistContents.innerHTML = '';
+
+            for (var photoTitle in data) {
+                if (data.hasOwnProperty(photoTitle)) {
+                    var photoPath = data[photoTitle];
+
+                    // Create a list item for the photo title
+                    var photoTitleItem = document.createElement('li');
+                    photoTitleItem.textContent = photoTitle;
+
+                    // Create a nested list item for the photo path
+                    var photoPathList = document.createElement('ul');
+                    var photoPathItem = document.createElement('li');
+                    photoPathItem.textContent = photoPath;
+
+                    // Append the photo path item to the nested list
+                    photoPathList.appendChild(photoPathItem);
+
+                    // Append the nested list to the photo title item
+                    photoTitleItem.appendChild(photoPathList);
+
+                    // Append the photo title item to the playlist contents
+                    playlistContents.appendChild(photoTitleItem);
+                }
+            }
+        }
     </script>
 
 </body>

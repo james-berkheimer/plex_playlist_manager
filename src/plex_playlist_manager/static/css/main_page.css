@@ -1,5 +1,7 @@
-
+/* Importing Google Font */
 @import "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700";
+
+/* Body and Paragraph Styles */
 body {
     font-family: 'Poppins', sans-serif;
     background: #3b3c3d;
@@ -12,6 +14,7 @@ p {
     line-height: 1.7em;
 }
 
+/* Link Styles */
 a,
 a:hover,
 a:focus {
@@ -20,13 +23,8 @@ a:focus {
     transition: all 0.3s;
 }
 
+/* Navbar Styles */
 .navbar {
-    /* padding: 15px 10px;
-    background: #3b3c3d;
-    border: none;
-    border-radius: 0;
-    margin-bottom: 40px;
-    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1); */
     background-color: #333333 !important;
     height: 60px;
 }
@@ -43,6 +41,7 @@ a:focus {
     border-color: #b3934d !important;
 }
 
+/* Line Styles */
 .line {
     width: 100%;
     height: 1px;
@@ -50,10 +49,12 @@ a:focus {
     margin: 40px 0;
 }
 
+/* Form Styles */
 .form-inline .form-control {
     width: 350px;
 }
 
+/* General Element Styles */
 i,
 span {
     display: inline-block;
@@ -64,6 +65,7 @@ span {
     align-items: stretch;
 }
 
+/* Sidebar Styles */
 #sidebar {
     min-width: 250px;
     max-width: 250px;
@@ -87,13 +89,19 @@ span {
     display: block;
 }
 
+#sidebar .sidebar-header {
+    padding: 20px;
+    background: #b3934d;
+}
+
+#sidebar .sidebar-header strong {
+    display: none;
+    font-size: 1.8em;
+}
+
 #sidebar ul {
     list-style-type: none;
 }
-
-/* #sidebar i {
-    margin-right: 5px;
-} */
 
 #sidebar ul li a {
     text-align: left;
@@ -125,18 +133,6 @@ span {
     transform: translateX(50%);
 }
 
-/* Sidebar Styling */
-
-#sidebar .sidebar-header {
-    padding: 20px;
-    background: #b3934d;
-}
-
-#sidebar .sidebar-header strong {
-    display: none;
-    font-size: 1.8em;
-}
-
 #sidebar ul.components {
     padding: 20px 0;
     border-bottom: 1px solid #636566;
@@ -149,12 +145,12 @@ span {
 }
 
 ul li {
-    cursor: pointer; /* Changes the cursor to a hand when hovering over the list item */
+    cursor: pointer;
 }
 
 ul li:hover {
-    background-color: #b3934d; /* Changes the background color of the list item on hover */
-    color: #fff; /* Changes the text color of the list item on hover */
+    background-color: #b3934d;
+    color: #fff;
 }
 
 #sidebar ul li a:hover {
@@ -172,11 +168,13 @@ a[aria-expanded="true"] {
     background: #39393a;
 }
 
+/* Playlist Styles */
 .sidebar-category-card {
     background-color: #333333;
 }
 
 .playlist-card-expanded {
+    background-color: #39393a;
     color: #b3934d;
 }
 
@@ -184,8 +182,25 @@ a[aria-expanded="true"] {
     background-color: #b3934d;
 }
 
-/* ###################################### */
 
+/* New styles for .sidebar-playlist-type-card */
+.playlist-type-card-header:hover {
+    cursor: pointer;
+    background-color: #b3934d;
+    color: #fff;
+    -webkit-user-select: none; /* For Safari */
+    -moz-user-select: none;    /* For Firefox */
+    -ms-user-select: none;     /* For Internet Explorer/Edge */
+    user-select: none;
+}
+
+.sidebar-playlist-type-card.active,
+.sidebar-playlist-type-card[aria-expanded="true"] {
+    background-color: #39393a;
+    color: #b3934d;
+}
+
+/* Dropdown Styles */
 a[data-toggle="collapse"] {
     position: relative;
 }
@@ -204,8 +219,7 @@ ul ul a {
     background: #333333;
 }
 
-/* here */
-
+/* Download and Article Styles */
 a.download {
     background: #fff;
     color: #b3934d;
@@ -217,13 +231,9 @@ a.article:hover {
     color: #fff !important;
 }
 
-/* ---------------------------------------------------
-    CONTENT STYLE
------------------------------------------------------ */
-
+/* Content Styles */
 #content {
     width: 100%;
-    /* padding: 20px; */
     min-height: 100vh;
     transition: all 0.3s;
 }
@@ -233,6 +243,7 @@ a.article:hover {
     padding: 20px;
 }
 
+/* Responsive Styles */
 @media (max-width: 768px) {
     #sidebar {
         min-width: 80px;

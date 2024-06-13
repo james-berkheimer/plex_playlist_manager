@@ -1,0 +1,27 @@
+.main-container {
+    flex: 1;
+    height: 100vh;
+    overflow: auto;
+}
+
+.main-topbar {
+    padding: 39px;
+    background: #333;
+    color: #fff;
+}
+
+.playlist-item-li {
+    cursor: pointer;
+}
+
+.playlist-item-li:hover {
+    background-color: #b3934d;
+}
+
+.playlist-item-li.selected {
+    background-color: #b3934d;
+}
+
+.playlist_contents {
+    padding: 20px;
+}

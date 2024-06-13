@@ -1,0 +1,30 @@
+/* Importing Google Font */
+@import "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700";
+
+/* Variables */
+:root {
+    --hover-color: #b3934d;
+    --background-color: #3b3c3d;
+    --text-color: #fff;
+    --font-family: 'Poppins', sans-serif;
+}
+
+/* Base Styles */
+body {
+    font-family: var(--font-family);
+    background: var(--background-color);
+    color: var(--text-color);
+}
+
+p {
+    font-family: var(--font-family);
+    font-size: 1.1em;
+    font-weight: 300;
+    line-height: 1.7em;
+}
+
+
+.wrapper {
+    display: flex;
+}
+

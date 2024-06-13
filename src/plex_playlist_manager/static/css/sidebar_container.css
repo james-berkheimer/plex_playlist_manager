@@ -1,0 +1,44 @@
+.sidebar-container {
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100%;
+    background: #333;
+    color: #fff;
+    transition: all 0.3s;
+    height: 100vh;
+    overflow: auto;
+
+}
+
+.sidebar-header {
+    padding: 20px;
+    font-size: 1.8em;
+    color: #fff;
+    background: #b3934d;
+}
+
+.sidebar-category-container {
+    margin-top: 10px;
+    margin-left: 20px;
+}
+
+.sidebar-category-card{
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+.sidebar-category-card:hover {
+    cursor: pointer;
+    background-color: #b3934d;
+    color: #fff;
+    -webkit-user-select: none; /* For Safari */
+    -moz-user-select: none;    /* For Firefox */
+    -ms-user-select: none;     /* For Internet Explorer/Edge */
+    user-select: none;
+}
+
+.playlist-item-list {
+    list-style-type: none;
+}

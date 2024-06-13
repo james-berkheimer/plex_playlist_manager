@@ -1,7 +1,4 @@
 import re
-from pprint import pprint
-
-from flask import current_app
 
 
 def categorize_playlists(playlists):
@@ -17,16 +14,13 @@ def categorize_playlists(playlists):
         return None
 
 
-def get_sorted_artists(playlist):
-    sorted_artists = []
-
-    if playlist is not None:
-        artists = {}
-        for item in playlist.items():
+def get_sorted_artists(playlist_items):
+    artists = {}
+    for item in playlist_items:
+        if type(item).__name__ == "Track":
             cleaned_name = re.sub(r"\W+", "", item.grandparentTitle).lower()
             artists[cleaned_name] = item.grandparentTitle
-        for artist in sorted(artists.keys()):
-            sorted_artists.append(artists[artist])
+    sorted_artists = [artists[artist] for artist in sorted(artists.keys())]
     return sorted_artists
 
 
@@ -34,77 +28,69 @@ def get_playlist_audio_data(playlists):
     data = {}
     for playlist in playlists:
         playlist_title = playlist.title.strip()
-        data[playlist_title] = {"artists": {}}
-
-        sorted_artists = get_sorted_artists(playlist)
-        # print(f"\tPlaylist Title: {playlist_title}")
-        # print(f"\tSorted Artists: {sorted_artists}")
-
+        data[playlist_title] = {}
+        sorted_artists = get_sorted_artists(playlist.items())
         for artist_name in sorted_artists:
-            if artist_name not in data[playlist_title]["artists"]:
-                data[playlist_title]["artists"][artist_name] = {"albums": {}}
-
+            if artist_name not in data[playlist_title]:
+                data[playlist_title][artist_name] = {}
             for item in playlist.items():
                 if type(item).__name__ == "Track" and item.grandparentTitle.strip() == artist_name:
                     album_title = item.parentTitle.strip()
-                    if album_title not in data[playlist_title]["artists"][artist_name]["albums"]:
-                        data[playlist_title]["artists"][artist_name]["albums"][album_title] = {
-                            "tracks": []
-                        }
-
+                    if album_title not in data[playlist_title][artist_name]:
+                        data[playlist_title][artist_name][album_title] = []
                     track_title = item.title.strip()
                     track_number = item.trackNumber
-                    data[playlist_title]["artists"][artist_name]["albums"][album_title][
-                        "tracks"
-                    ].append(
-                        {
-                            "title": track_title,
-                            "number": track_number,
-                        }
+                    data[playlist_title][artist_name][album_title].append(
+                        [track_title, track_number]
                     )
-
     return data
+
+
+def get_sorted_titles(playlist_items):
+    titles = {}
+    for item in playlist_items:
+        item_type = type(item).__name__
+        if item_type == "Episode":
+            cleaned_title = re.sub(r"\W+", "", item.grandparentTitle).lower()
+            titles[cleaned_title] = item.grandparentTitle
+        elif item_type == "Movie":
+            cleaned_title = re.sub(r"\W+", "", item.title).lower()
+            titles[cleaned_title] = item.title
+    sorted_titles = [titles[title] for title in sorted(titles.keys())]
+    return sorted_titles
 
 
 def get_playlist_video_data(playlists):
     data = {}
     for playlist in playlists:
         playlist_title = playlist.title.strip()
-        data[playlist_title] = {"shows": {}, "movies": []}
+        data[playlist_title] = {}
+        sorted_titles = get_sorted_titles(playlist.items())
+        for title in sorted_titles:
+            for item in playlist.items():
+                item_type = type(item).__name__
+                if item_type == "Episode" and item.grandparentTitle.strip() == title:
+                    if item_type not in data[playlist_title]:
+                        data[playlist_title][item_type] = {}
 
-        for item in playlist.items():
-            item_type = type(item).__name__
-            if item_type == "Episode":
-                show_title = item.grandparentTitle.strip()
-                if show_title not in data[playlist_title]["shows"]:
-                    data[playlist_title]["shows"][show_title] = {"seasons": {}}
+                    if title not in data[playlist_title][item_type]:
+                        data[playlist_title][item_type][title] = {}
 
-                season_title = item.parentTitle.strip()
-                if season_title not in data[playlist_title]["shows"][show_title]["seasons"]:
-                    data[playlist_title]["shows"][show_title]["seasons"][season_title] = {
-                        "episodes": []
-                    }
+                    season_title = item.parentTitle.strip()
+                    if season_title not in data[playlist_title][item_type][title]:
+                        data[playlist_title][item_type][title][season_title] = []
 
-                episode_title = item.title.strip()
-                episode_number = item.index
-                data[playlist_title]["shows"][show_title]["seasons"][season_title][
-                    "episodes"
-                ].append(
-                    {
-                        "title": episode_title,
-                        "number": episode_number,
-                    }
-                )
+                    episode_title = item.title.strip()
+                    episode_number = item.index
+                    data[playlist_title][item_type][title][season_title].append(
+                        [episode_title, episode_number]
+                    )
 
-            if item_type == "Movie":
-                movie_title = item.title.strip()
-                movie_year = item.year
-                data[playlist_title]["movies"].append(
-                    {
-                        "title": movie_title,
-                        "year": movie_year,
-                    }
-                )
+                if item_type == "Movie" and item.title.strip() == title:
+                    movie_year = item.year
+                    if item_type not in data[playlist_title]:
+                        data[playlist_title][item_type] = {}
+                    data[playlist_title][item_type][title] = movie_year
 
     return data
 
@@ -113,25 +99,18 @@ def get_playlist_photo_data(playlists):
     data = {}
     for playlist in playlists:
         playlist_title = playlist.title.strip()
-        data[playlist_title] = {"photos": []}
+        data[playlist_title] = {}
 
         for item in playlist.items():
             if type(item).__name__ == "Photo":
                 photo_title = item.title.strip()
                 photo_path = item.locations[0]
-                data[playlist_title]["photos"].append(
-                    {
-                        "title": photo_title,
-                        "path": photo_path,
-                    }
-                )
+                data[playlist_title][photo_title] = photo_path
 
     return data
 
 
-def get_playlist_data():
-    plex_service = current_app.config["PLEX_SERVICE"]
-    plex_server = plex_service.plex_server
+def get_playlist_data(plex_server):
     categorized_playlists = categorize_playlists(plex_server.playlists())
     playlist_data = {}
 
@@ -147,7 +126,6 @@ def get_playlist_data():
 
     if "photo" in categorized_playlists:
         photo_data = get_playlist_photo_data(categorized_playlists["photo"])
-        print(photo_data)
         if photo_data:
             playlist_data["photo"] = photo_data
 
