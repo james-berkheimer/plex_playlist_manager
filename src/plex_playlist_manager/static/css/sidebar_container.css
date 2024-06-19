@@ -8,7 +8,6 @@
     transition: all 0.3s;
     height: 100vh;
     overflow: auto;
-
 }
 
 .sidebar-header {
@@ -23,7 +22,7 @@
     margin-left: 20px;
 }
 
-.sidebar-category-card{
+.sidebar-category-card {
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 5px;
@@ -42,3 +41,34 @@
 .playlist-item-list {
     list-style-type: none;
 }
+
+/* New styles */
+.playlist-icon {
+    margin-right: 10px;
+}
+
+.no-select {
+    -webkit-user-select: none; /* For Safari */
+    -moz-user-select: none;    /* For Firefox */
+    -ms-user-select: none;     /* For Internet Explorer/Edge */
+    user-select: none;
+}
+
+.playlist-item,
+.no-bullets,
+.no-bullets li {
+    list-style-type: none;
+    padding-left: 0;
+    margin-left: 0;
+}
+
+.artist-item::marker,
+.album-item::marker,
+.track-item::marker,
+.movie-item::marker,
+.show-item::marker,
+.season-item::marker,
+.episode-item::marker {
+    content: "";
+}
+
