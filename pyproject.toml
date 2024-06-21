@@ -21,6 +21,8 @@ requires-python = ">=3.9"
 dependencies = [
     "click",
     "colorlog",
+    "flask",
+    "flask-wtf",
     "plexapi",
     "redis"
 ]

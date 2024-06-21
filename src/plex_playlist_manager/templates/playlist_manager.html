@@ -20,7 +20,7 @@
                 <ul class="sidebar-category-container list-unstyled components">
                     {% for playlist_type, playlists in categorized_playlists.items() %}
                         <li class="sidebar-category-list">
-                            <h5 class="sidebar-category-card" data-toggle="collapse" data-target="#collapse{{ loop.index }}" aria-expanded="false" aria-controls="collapse{{ loop.index }}">
+                            <h5 class="sidebar-category-card" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" aria-controls="collapse{{ loop.index }}">
                                 {% if playlist_type == 'audio' %}
                                     <i class="fas fa-music playlist-icon"></i>
                                 {% elif playlist_type == 'video' %}
@@ -48,7 +48,6 @@
                     {% endfor %}
                 </ul>
             </aside>
-
         </div>
         <div class="main-container">
             <nav class="main-topbar navbar navbar-expand-lg navbar-light">
@@ -58,17 +57,16 @@
                     </form>
                 </div>
             </nav>
-            <div id="playlist_contents" class="playlist_contents">
-            </div>
+            <div id="playlist_contents" class="playlist_contents"></div>
             <!-- Testing Begin -->
-            <!-- <div class="item-parent">
+            <div class="item-parent">
                 <div class="item-child item-checkbox">
                     <div class="content">X</div>
                 </div>
                 <div class="item-child item-content">
-                    <div class="content">Child 2</div>
+                    <a class="content">Artist 1</a>
                 </div>
-            </div> -->
+            </div>
             <!-- Testing End -->
         </div>
     </div>
@@ -97,18 +95,17 @@
     </template> -->
 
     <template id="audio-item-template">
-        <div class="item-parent artist-item">
-            <div class="item-child item-checkbox">
-                <div class="checkbox-content">
+        <div class="audio-item">
+            <div class="audio-item-child checkbox-content">
+                <div class="artist-checkbox">
                     <input type="checkbox" id="myCheckbox">
                 </div>
             </div>
-            <div class="item-child item-content">
-                <a class="artist-name" ></a>
+            <div class="audio-item-child artist-content">
+                <a class="artist-name"></a>
             </div>
         </div>
     </template>
-
 
     <!-- <a data-testid="metadataTitleLink" title="Rockin’ Into the Night" data-uid="id-700" href="#!/server/03e918e892c46149f99d1de8e3207811e864c50a/details?key=%2Flibrary%2Fmetadata%2F12629&amp;context=source%3Acontent.playlists.music~0~2" role="link" class="MetadataPosterTitle-singleLineTitle-e8SSfL MetadataPosterTitle-title-bvCBDN Link-link-SxPFpG Link-default-BXtKLo">Rockin’ Into the Night</a> -->
 
@@ -133,12 +130,8 @@
     </template>
 
 
-    <!-- jQuery CDN -->
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
-    <!-- Popper.JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
-    <!-- Bootstrap JS -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 
     <!-- Our Custom Scripts -->
     <script>
@@ -161,30 +154,43 @@
                     playlistContents.innerHTML = '';
 
                     // Get the playlist title and type
-                    var playlistTitle = this.textContent;
+                    var playlistTitle = this.textContent.trim();
                     var playlistType = this.dataset.playlistType;
 
                     // Send a request to the server with the playlist title and type
-                    $.ajax({
-                        url: '/get_playlist_items',
-                        type: 'POST',
-                        data: {
+                    fetch('/get_playlist_items', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
                             'playlist_title': playlistTitle,
                             'playlist_type': playlistType
-                        },
-                        success: function(data) {
-                            // Handle each type of data differently
-                            if (playlistType === 'video') {
-                                handleVideoData(data);
-                            } else if (playlistType === 'audio') {
-                                handleAudioData(data);
-                            } else if (playlistType === 'photo') {
-                                handlePhotoData(data);
-                            }
-                        },
-                        error: function(jqXHR, textStatus, errorThrown) {
-                            console.error("AJAX call failed: " + textStatus + ", " + errorThrown);
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => { throw err; });
                         }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log(data);
+                        console.log(playlistType);
+                        if (playlistType === 'video') {
+                            handleVideoData(data);
+                        } else if (playlistType === 'audio') {
+                            handleAudioData(data);
+                        } else if (playlistType === 'photo') {
+                            handlePhotoData(data);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Fetch error:', error);
+                        var errorMessage = document.createElement('div');
+                        errorMessage.classList.add('alert', 'alert-danger');
+                        errorMessage.textContent = 'An error occurred while fetching playlist data. Please try again later.';
+                        playlistContents.appendChild(errorMessage);
                     });
                 });
             });
@@ -210,44 +216,45 @@
                                 seasonListItem.textContent = seasonNumber;
                                 var episodesList = document.createElement('ul');
 
-                                // Clear the episodes list in the template
-                                episodesList.innerHTML = '';
-
-                                seasonListItem.appendChild(episodesList);
-
+                                // Append the episodes to the season list item
                                 var episodes = seasons[seasonNumber];
                                 episodes.forEach(function(episode) {
-                                    var episodeTitle = episode[0];
-                                    var episodeNumber = episode[1];
-                                    var episodeListItem = document.createElement('li');
-                                    episodeListItem.textContent = episodeNumber + ": " + episodeTitle;
-                                    episodesList.appendChild(episodeListItem);
+                                    var episodeItem = document.createElement('li');
+                                    episodeItem.textContent = episode;
+                                    episodesList.appendChild(episodeItem);
                                 });
+
+                                seasonListItem.appendChild(episodesList);
                                 seasonsList.appendChild(seasonListItem);
                             }
+
                             playlistContents.appendChild(showListItem);
                         }
                     } else if (videoType === "Movie") {
-                        for (var movieTitle in videoItems) {
-                            var year = videoItems[movieTitle];
+                        videoItems.forEach(function(movieTitle) {
                             var movieListItem = movieTemplate.content.cloneNode(true);
-                            movieListItem.querySelector('.movie-title').textContent = movieTitle + " (" + year + ")";
+                            movieListItem.querySelector('.movie-title').textContent = movieTitle;
                             playlistContents.appendChild(movieListItem);
-                        }
+                        });
                     }
                 }
             }
 
             function handleAudioData(data) {
-                var audio_template = document.getElementById('audio-item-template');
+                console.log("In handleAudioData");
+                var audioTemplate = document.getElementById('audio-item-template');
+                console.log(audioTemplate);
 
-                for (var artistName in data) {
-                    var artistListItem = audio_template.content.cloneNode(true);
-                    console.log(artistListItem);
-                    artistListItem.querySelector('.artist-name').textContent = artistName;
-                    playlistContents.appendChild(artistListItem);
+                for (var artist in data) {
+                    console.log(artist);
+                    if (data.hasOwnProperty(artist)) {
+                        var audioListItem = audioTemplate.content.cloneNode(true);
+                        audioListItem.querySelector('.artist-name').textContent = artist;
+                        playlistContents.appendChild(audioListItem);
+                    }
                 }
             }
+
 
             // function handleAudioData(data) {
             //     var audio_template = document.getElementById('audio-item-template');

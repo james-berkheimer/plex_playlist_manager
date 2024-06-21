@@ -1,4 +1,5 @@
 import json
+from pprint import pprint
 
 from flask import Blueprint, jsonify, render_template, request
 from redis import StrictRedis
@@ -41,8 +42,9 @@ def playlist_manager():
 
 @get_playlist_items_bp.route("/get_playlist_items", methods=["POST"])
 def get_playlist_items():
-    playlist_type = request.form.get("playlist_type").strip()
-    playlist_title = request.form.get("playlist_title").strip()
+    print(f"request: {request.json}")  # Debugging print
+    playlist_type = request.json.get("playlist_type").strip()
+    playlist_title = request.json.get("playlist_title").strip()
     print(f"Playlist type: {playlist_type}, Playlist title: {playlist_title}")
 
     redis_client = get_db()
@@ -53,6 +55,8 @@ def get_playlist_items():
 
     playlist_data_str = playlist_data_bytes.decode("utf-8")
     playlist_data = json.loads(playlist_data_str)
+
+    pprint(playlist_data)  # Debugging print
 
     return jsonify(playlist_data)
 
