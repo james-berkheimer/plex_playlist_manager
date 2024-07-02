@@ -97,6 +97,8 @@ def get_playlist_video_data(playlists):
 
 def get_playlist_photo_data(playlists):
     data = {}
+    plex_server_ip = "192.168.1.42"
+    plex_server_port = 32400
     for playlist in playlists:
         playlist_title = playlist.title.strip()
         data[playlist_title] = {}
@@ -104,8 +106,8 @@ def get_playlist_photo_data(playlists):
         for item in playlist.items():
             if type(item).__name__ == "Photo":
                 photo_title = item.title.strip()
-                photo_path = item.locations[0]
-                data[playlist_title][photo_title] = photo_path
+                thumb_url = f"http://{plex_server_ip}:{plex_server_port}{item.thumb}"
+                data[playlist_title][photo_title] = thumb_url
 
     return data
 

@@ -9,7 +9,9 @@ from .plex.authentication import (
 )
 from .utils.logging import LOGGER
 
-cred_path = "/home/james/code/flask_tree_test/tests/.plex_cred/credentials.json"  # for development
+cred_path = (
+    "/home/james/code/plex_playlist_manager/tests/.plex_cred/credentials.json"  # for development
+)
 
 
 def set_env_vars_from_json(cred_path):

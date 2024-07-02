@@ -13,7 +13,7 @@ from .utils.logging import LOGGER
 def main(debugger, host, port):
     LOGGER.info("Starting Plex Playlist Manager")
     os.environ["FLASK_APP"] = "plex_playlist_manager.app"
-    os.environ["PLEX_CRED"] = "/home/james/code/flask_test/tests/.plex_cred"
+    os.environ["PLEX_CRED"] = "/home/james/code/plex_playlist_manager/tests/.plex_cred"
 
     os.environ["FLASK_RUN_HOST"] = host
     os.environ["FLASK_RUN_PORT"] = str(port)

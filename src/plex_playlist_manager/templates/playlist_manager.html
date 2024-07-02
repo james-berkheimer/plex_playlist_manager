@@ -20,7 +20,7 @@
                 <ul class="sidebar-category-container list-unstyled components">
                     {% for playlist_type, playlists in categorized_playlists.items() %}
                         <li class="sidebar-category-list">
-                            <h5 class="sidebar-category-card" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" aria-controls="collapse{{ loop.index }}">
+                            <h5 class="sidebar-category-card" data-bs-toggle="collapse" data-bs-target="#sidebarCollapse{{ loop.index }}" aria-expanded="false" aria-controls="sidebarCollapse{{ loop.index }}">
                                 {% if playlist_type == 'audio' %}
                                     <i class="fas fa-music playlist-icon"></i>
                                 {% elif playlist_type == 'video' %}
@@ -33,7 +33,7 @@
                                 {{ playlist_type|capitalize }}
                             </h5>
 
-                            <div id="collapse{{ loop.index }}" class="collapse" aria-labelledby="heading{{ loop.index }}" data-parent=".sidebar">
+                            <div id="sidebarCollapse{{ loop.index }}" class="collapse" aria-labelledby="heading{{ loop.index }}" data-parent=".sidebar">
                                 <div class="playlist-container">
                                     <ul id="sidebar-playlist-list" class="components">
                                         {% for playlist in playlists %}
@@ -58,16 +58,20 @@
                 </div>
             </nav>
             <div id="playlist_contents" class="playlist_contents"></div>
+
+
             <!-- Testing Begin -->
             <div class="item-parent">
                 <div class="item-child item-checkbox">
                     <div class="content">X</div>
                 </div>
                 <div class="item-child item-content">
-                    <a class="content">Artist 1</a>
+                    <a class="artist-name">Artist 1</a>
                 </div>
             </div>
             <!-- Testing End -->
+
+
         </div>
     </div>
 
