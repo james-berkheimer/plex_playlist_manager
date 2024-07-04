@@ -1,0 +1,105 @@
+<div>
+    {% for item_type, data in data_dict.items() %}
+        {% if item_type == 'Episode' %}
+            {% for show_index, (show, seasons) in enumerate(data.items()) %}
+                <div class="show-item">
+                    <div class="row-container">
+                        <div class="checkbox-container" id="show-checkbox-container">
+                            <span type="checkbox" class="show-checkbox" id="checkbox-{{ show }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
+                                    <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                                  </svg>
+                            </span>
+                        </div>
+                        <div class="show-container">
+                            <div class="show-details-left">
+                                <h5 class="show-name mb-0">
+                                    <a>{{ show }}</a>
+                                </h5>
+                            </div>
+                            <div type="button" class="click-area d-flex align-items-center" data-bs-toggle="collapse" data-bs-target="#collapse-show-{{ show_index }}" aria-expanded="true" aria-controls="collapse-show-{{ show_index }}">
+                                <span class="show-button chevron-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="show-details-right">
+                                <span>Seasons: {{ seasons|length }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse" id="collapse-show-{{ show_index }}">
+                        {% for season_index, (season, episodes) in enumerate(seasons.items()) %}
+                        <div class="row-container season-row">
+                            <div class="checkbox-container" id="season-checkbox-container">
+                                <span type="checkbox" class="season-checkbox" id="checkbox-{{ show }}--{{ season }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
+                                        <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                                      </svg>
+                                </span>
+                            </div>
+                            <div class="season-container">
+                                <div class="season-details-left">
+                                    <h6 class="season-name mb-0">
+                                        <a>{{ season }}</a>
+                                    </h6>
+                                </div>
+                                <div class="click-area d-flex align-items-center" data-bs-toggle="collapse" data-bs-target="#collapse-show-{{ show_index }}-season-{{ season_index }}" aria-expanded="true" aria-controls="collapse-show-{{ show_index }}-season-{{ season_index }}">
+                                    <span class="season-button chevron-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                                            <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                                        </svg>
+                                    </span>
+                                </div>
+                                <div class="season-details-right">
+                                    <span>Episodes: {{ episodes|length }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="collapse" id="collapse-show-{{ show_index }}-season-{{ season_index }}">
+                            {% for episode_index, episode in enumerate(episodes) %}
+                            <div class="row-container episode-row">
+                                <div class="checkbox-container episode-checkbox-container">
+                                    <span type="checkbox" class="episode-checkbox" id="checkbox-{{ show }}--{{ season }}--{{ episode[1] }}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
+                                            <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                                          </svg>
+                                    </span>
+                                </div>
+                                <div class="episode-container">
+                                    <div class="episode-name">
+                                        {{ episode[1] }}: {{ episode[0] }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% elif item_type == 'Movie' %}
+            {% for movie_index, (movie, year) in enumerate(data.items()) %}
+            <div class="movie-item">
+                <div class="row-container">
+                    <div class="checkbox-container" id="movie-checkbox-container">
+                        <span type="checkbox" class="movie-checkbox" id="checkbox-{{ movie }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16">
+                                <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                              </svg>
+                        </span>
+                    </div>
+                    <div class="movie-container">
+                        <div class="movie-details-left">
+                            <h5 class="movie-name">
+                                <a>{{ movie }} ({{ year }})</a>
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+</div>

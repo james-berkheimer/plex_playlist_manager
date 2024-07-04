@@ -1,0 +1,14 @@
+<div class="container">
+    <div class="row justify-content-center">
+        {% for photo_name, thumb_url in data_dict.items() %}
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="photo-card card h-100">
+                <img class="card-img-top custom-thumbnail" src="{{ thumb_url }}" alt="{{ photo_name }}">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ photo_name }}</h5>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

@@ -19,13 +19,13 @@ playlist_manager_bp = Blueprint("playlist_manager", __name__)
 def categorize_playlists(redis_client):
     try:
         categorized_playlists = {}
-        playlist_types = redis_client.keys("*")
+        # Decode and sort playlist types
+        playlist_types = sorted([pt.decode() for pt in redis_client.keys("*")])
         for playlist_type in playlist_types:
-            encoded_data = redis_client.hgetall(playlist_type)
-            decoded_playlists_names = []
-            for key, _value in encoded_data.items():
-                decoded_playlists_names.append(key.decode())
-            categorized_playlists[playlist_type.decode()] = decoded_playlists_names
+            encoded_data = redis_client.hgetall(playlist_type.encode())
+            # Decode and sort playlist names
+            decoded_playlists_names = sorted([key.decode() for key in encoded_data.keys()])
+            categorized_playlists[playlist_type] = decoded_playlists_names
         return categorized_playlists
     except Exception as e:
         print(f"Failed to fetch playlists: {e}")
@@ -36,15 +36,23 @@ def categorize_playlists(redis_client):
 def playlist_manager():
     redis_client = get_db()
     return render_template(
-        "playlist_manager.html", categorized_playlists=categorize_playlists(redis_client)
+        "playlist_manager/playlist_manager_main.html",
+        categorized_playlists=categorize_playlists(redis_client),
     )
 
 
 @get_playlist_items_bp.route("/get_playlist_items", methods=["POST"])
 def get_playlist_items():
-    print(f"request: {request.json}")  # Debugging print
-    playlist_type = request.json.get("playlist_type").strip()
-    playlist_title = request.json.get("playlist_title").strip()
+    # Access request.json once
+    request_data = request.json
+    print(f"request: {request_data}")  # Debugging print
+
+    # Error handling for missing or blank fields
+    playlist_type = request_data.get("playlist_type", "").strip()
+    playlist_title = request_data.get("playlist_title", "").strip()
+    if not playlist_type or not playlist_title:
+        return jsonify({"error": "Missing or blank playlist type or title"}), 400
+
     print(f"Playlist type: {playlist_type}, Playlist title: {playlist_title}")
 
     redis_client = get_db()
@@ -56,9 +64,22 @@ def get_playlist_items():
     playlist_data_str = playlist_data_bytes.decode("utf-8")
     playlist_data = json.loads(playlist_data_str)
 
-    pprint(playlist_data)  # Debugging print
+    # Mapping of playlist types to templates
+    templates = {
+        "audio": "playlist_manager/audio_playlist.html",
+        "video": "playlist_manager/video_playlist.html",
+        "photo": "playlist_manager/photo_playlist.html",
+    }
 
-    return jsonify(playlist_data)
+    template = templates.get(playlist_type)
+    if template:
+        # Check if playlist type is audio or video to include enumerate
+        if playlist_type in ["audio", "video"]:
+            return render_template(template, data_dict=playlist_data, enumerate=enumerate)
+        else:
+            return render_template(template, data_dict=playlist_data)
+    else:
+        return jsonify({"error": "Invalid playlist type"}), 400
 
 
 # Populate Redis cache when server starts

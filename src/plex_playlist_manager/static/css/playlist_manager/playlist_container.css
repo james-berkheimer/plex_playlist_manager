@@ -1,0 +1,356 @@
+.album-button {
+    margin-right: 65px;
+}
+
+.album-container {
+    align-items: center;
+    background-color: #3f3f3f;
+    border: 1px solid var(--bs-border-color-translucent);
+    border-radius: 5px;
+    color: #fff;
+    display: flex;
+    flex-grow: 1;
+    height: 100%;
+}
+
+.album-container:hover {
+    background-color: #b3934d;
+    border-radius: 5px;
+}
+
+.album-details-left {
+    align-items: center;
+    display: flex;
+    flex: 1 0 25%;
+    padding: 0 10px;
+}
+
+.album-details-right {
+    align-items: center;
+    display: flex;
+    flex: 1 0 25%;
+    justify-content: flex-end;
+    padding: 0 10px;
+}
+
+.album-name {
+    margin-left: 5px;
+    color:#fff;
+}
+
+.album-row {
+    background-color: #333;
+    margin-left: 60px;
+}
+
+.artist-button {
+    margin-right: 5px;
+}
+
+.artist-container {
+    align-items: center;
+    background-color: #444;
+    border: 1px solid var(--bs-border-color-translucent);
+    border-radius: 5px;
+    color: #fff;
+    display: flex;
+    flex-grow: 1;
+    height: 100%;
+}
+
+.artist-container:hover {
+    background-color: #b3934d;
+    border-radius: 5px;
+}
+
+.artist-details-left {
+    align-items: center;
+    display: flex;
+    flex: 1 0 25%;
+    padding: 0 10px;
+}
+
+.artist-details-right {
+    align-items: center;
+    display: flex;
+    flex: 1 0 25%;
+    justify-content: flex-end;
+    padding: 0 10px;
+}
+
+.artist-item {
+    background-color: #333;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.artist-name {
+    margin-left: 5px;
+    color:#fff;
+}
+
+.artist-row {
+    background-color: #333;
+}
+
+.card {
+    background-color: #444;
+    color: #fff;
+}
+
+.checkbox-container {
+    align-items: center;
+    background-color: #333;
+    border: 1px solid #6d6451;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    flex-basis: 20px;
+    flex-grow: 0;
+    height: 100%;
+    justify-content: center;
+    min-width: 50px;
+    padding: 10px;
+    user-select: none;
+}
+
+.checkbox-container.checked {
+    background-color: #b3934d;
+}
+
+.checkbox-container:hover {
+    background-color: #b3934d;
+    border-radius: 5px;
+}
+
+.click-area {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    flex: 1 0 50%;
+    height: 50%;
+    justify-content: center;
+    user-select: none;
+}
+
+.episode-container {
+    align-items: center;
+    background-color: #3a3a3a;
+    border: var(--bs-card-border-width) solid var(--bs-card-border-color);
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    flex-grow: 1;
+    height: 100%;
+    user-select: none;
+    --bs-card-border-color: var(--bs-border-color-translucent);
+    --bs-card-border-width: 1px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.episode-container:hover {
+    background-color: #b3934d;
+    border-radius: 5px;
+}
+
+.episode-name {
+    margin-left: 5px;
+}
+
+.episode-row {
+    background-color: #333;
+    margin-left: 120px;
+}
+
+.main-container {
+    flex: 1;
+    height: 100vh;
+    overflow: auto;
+}
+
+.movie-container {
+    align-items: center;
+    background-color: #444;
+    border: 1px solid var(--bs-border-color-translucent);
+    border-radius: 5px;
+    color: #fff;
+    display: flex;
+    flex-grow: 1;
+    height: 100%;
+}
+
+.movie-container:hover {
+    background-color: #b3934d;
+    border-radius: 5px;
+}
+
+.movie-name {
+    margin-left: 5px;
+    color:#fff;
+}
+
+.playlist-container {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #7a7a7a #424242;
+}
+
+.photo-card {
+    cursor: pointer;
+    border: 3px solid #6b6c6e;
+    transition: border-color 0.2s;
+    background-color: 3a3a3a;
+    color: #fff;
+}
+.photo-card:hover {
+    border-color: #b3934d;
+}
+
+.root {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    width: 100%;
+    height: 100vh;
+}
+
+
+.row-container {
+    align-items: center;
+    display: flex;
+    height: 40px;
+}
+
+.season-button {
+    margin-right: 65px;
+}
+
+.season-container {
+    align-items: center;
+    background-color: #3f3f3f;
+    border: 1px solid var(--bs-border-color-translucent);
+    border-radius: 5px;
+    color: #fff;
+    display: flex;
+    flex-grow: 1;
+    height: 100%;
+}
+
+.season-container:hover {
+    background-color: #b3934d;
+    border-radius: 5px;
+}
+
+.season-details-left {
+    align-items: center;
+    display: flex;
+    flex: 1 0 25%;
+    padding: 0 10px;
+}
+
+.season-details-right {
+    align-items: center;
+    display: flex;
+    flex: 1 0 25%;
+    justify-content: flex-end;
+    padding: 0 10px;
+}
+
+.season-name {
+    margin-left: 5px;
+    color:#fff;
+}
+
+.season-row {
+    background-color: #333;
+    margin-left: 60px;
+}
+
+.show-button {
+    margin-right: 5px;
+}
+
+.show-container {
+    align-items: center;
+    background-color: #444;
+    border: 1px solid var(--bs-border-color-translucent);
+    border-radius: 5px;
+    color: #fff;
+    display: flex;
+    flex-grow: 1;
+    height: 100%;
+}
+
+.show-container:hover {
+    background-color: #b3934d;
+    border-radius: 5px;
+}
+
+.show-details-left {
+    align-items: center;
+    display: flex;
+    flex: 1 0 25%;
+    padding: 0 10px;
+}
+
+.show-details-right {
+    align-items: center;
+    display: flex;
+    flex: 1 0 25%;
+    justify-content: flex-end;
+    padding: 0 10px;
+}
+
+.show-item {
+    background-color: #333;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.show-name {
+    margin-left: 5px;
+    color:#fff;
+}
+
+.show-row {
+    background-color: #333;
+}
+
+
+.track-container {
+    align-items: center;
+    background-color: #3a3a3a;
+    border: var(--bs-card-border-width) solid var(--bs-card-border-color);
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    flex-grow: 1;
+    height: 100%;
+    user-select: none;
+    --bs-card-border-color: var(--bs-border-color-translucent);
+    --bs-card-border-width: 1px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.track-container:hover {
+    background-color: #b3934d;
+    border-radius: 5px;
+}
+
+.track-name {
+    margin-left: 5px;
+}
+
+.track-row {
+    background-color: #333;
+    margin-left: 120px;
+}

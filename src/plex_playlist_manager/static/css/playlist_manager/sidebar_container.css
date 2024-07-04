@@ -1,0 +1,62 @@
+.category-card {
+    border-radius: 5px;
+    margin-bottom: 10px;
+    padding: 10px;
+}
+
+.category-card:hover {
+    background-color: #b3934d;
+    color: #fff;
+    cursor: pointer;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.category-list {
+    margin-left: 20px;
+    margin-top: 10px;
+}
+
+.no-select {
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.playlist-icon {
+    margin-right: 10px;
+}
+
+.playlist-item {
+    cursor: pointer;
+    list-style-type: none;
+}
+
+.playlist-item:hover {
+    background-color: #b3934d;
+    color: #fff;
+}
+
+.playlist-item.selected {
+    background-color: #b3934d;
+}
+
+.sidebar {
+    max-height: calc(100% - 60px);
+}
+
+.sidebar-container {
+    background: #333;
+    color: #fff;
+    flex: 0 0 15%;
+    overflow-y: auto;
+    scrollbar-color: #7a7a7a #424242;
+    scrollbar-width: thin;
+}
+
+
+
+

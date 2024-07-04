@@ -1,0 +1,43 @@
+
+
+.root {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    width: 100%;
+    height: 100vh;
+}
+
+.top-container {
+    position: sticky;
+    flex: 0 0 8%;
+    display: flex;
+    flex-direction: row;
+}
+
+.topbar-header {
+    height: 100%;
+    flex: 0 0 15%;
+    color: #fff;
+    background: #b3934d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.topbar-contents {
+    flex: 1;
+    position: relative;
+    background: #333;
+}
+
+.middle-container {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    height: calc(100vh - 8%);
+}
+
+
+
