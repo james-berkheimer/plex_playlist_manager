@@ -15,17 +15,21 @@
             <header class="topbar-header h3">
                 Plex Playlist Manager
             </header>
-            <div class="topbar-contents">
-
+            <div id="topbar-contents">
+                <!-- Playlist details here -->
             </div>
         </div>
         <div class="middle-container">
             <div class="sidebar-container">
                 <aside class="sidebar">
                     <ul class="category-list list-unstyled components">
-                        {% for playlist_type, playlists in categorized_playlists.items() %}
+                        {% for playlist_type, playlists in category_dict.items() %}
                             <li class="category-item">
-                                <h5 class="category-card" data-bs-toggle="collapse" data-bs-target="#sidebarCollapse{{ loop.index }}" aria-expanded="false" aria-controls="sidebarCollapse{{ loop.index }}">
+                                <h5 class="category-card"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#sidebarCollapse{{ loop.index }}"
+                                    aria-expanded="false"
+                                    aria-controls="sidebarCollapse{{ loop.index }}">
                                     {% if playlist_type == 'audio' %}
                                         <i class="fas fa-music playlist-icon"></i>
                                     {% elif playlist_type == 'video' %}
@@ -38,12 +42,19 @@
                                     {{ playlist_type|capitalize }}
                                 </h5>
 
-                                <div id="sidebarCollapse{{ loop.index }}" class="collapse" aria-labelledby="heading{{ loop.index }}" data-parent=".sidebar">
-                                    <div class="playlist-container">
+                                <div id="sidebarCollapse{{ loop.index }}"
+                                    class="collapse"
+                                    aria-labelledby="heading{{ loop.index }}"
+                                    data-parent=".sidebar">
+                                    <div class="playlists-container">
                                         <ul id="playlist-list" class="components">
                                             {% for playlist in playlists %}
                                                 <div class="playlist-item-container no-select">
-                                                    <li class="playlist-item" id="playlist-item-li" data-playlist-type="{{ playlist_type }}">{{ playlist }}</li>
+                                                    <li class="playlist-item"
+                                                        id="playlist-item-li"
+                                                        data-playlist-type="{{ playlist_type }}">
+                                                        {{ playlist.title }}
+                                                    </li>
                                                 </div>
                                             {% endfor %}
                                         </ul>
@@ -61,59 +72,6 @@
             </div>
         </div>
     </div>
-
-
-
-        <!-- <div class="sidebar-container">
-            <header class="sidebar-header">
-                <h3>Plex Playlist Manager</h3>
-            </header>
-
-            <aside class="sidebar">
-                <ul class="sidebar-category-container list-unstyled components">
-                    {% for playlist_type, playlists in categorized_playlists.items() %}
-                        <li class="sidebar-category-list">
-                            <h5 class="sidebar-category-card" data-bs-toggle="collapse" data-bs-target="#sidebarCollapse{{ loop.index }}" aria-expanded="false" aria-controls="sidebarCollapse{{ loop.index }}">
-                                {% if playlist_type == 'audio' %}
-                                    <i class="fas fa-music playlist-icon"></i>
-                                {% elif playlist_type == 'video' %}
-                                    <i class="fas fa-video playlist-icon"></i>
-                                {% elif playlist_type == 'photo' %}
-                                    <i class="fas fa-image playlist-icon"></i>
-                                {% else %}
-                                    <i class="fas fa-list playlist-icon"></i>
-                                {% endif %}
-                                {{ playlist_type|capitalize }}
-                            </h5>
-
-                            <div id="sidebarCollapse{{ loop.index }}" class="collapse" aria-labelledby="heading{{ loop.index }}" data-parent=".sidebar">
-                                <div class="playlist-container">
-                                    <ul id="sidebar-playlist-list" class="components">
-                                        {% for playlist in playlists %}
-                                            <div class="playlist-item no-select">
-                                                <li class="playlist-item-li" data-playlist-type="{{ playlist_type }}">{{ playlist }}</li>
-                                            </div>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </aside>
-        </div>
-        <div class="main-container">
-            <nav class="main-topbar navbar navbar-expand-lg navbar-light">
-                <div class="search-box container-fluid">
-                    <form class="form-inline my-2 my-lg-0 ml-auto">
-                        <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-                    </form>
-                </div>
-            </nav>
-            <div id="playlistContent">
-                <!-- Playlist content will be inserted here -->
-            </div>
-        </div> -->
 
 
     <!-- Bootstrap Bundle with Popper for Bootstrap 5 -->

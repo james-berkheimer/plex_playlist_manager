@@ -29,7 +29,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="collapse" id="collapse-show-{{ show_index }}">
+                    <div class="collapse collpase-container" id="collapse-show-{{ show_index }}">
                         {% for season_index, (season, episodes) in enumerate(seasons.items()) %}
                         <div class="row-container season-row">
                             <div class="checkbox-container" id="season-checkbox-container">
@@ -57,7 +57,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="collapse" id="collapse-show-{{ show_index }}-season-{{ season_index }}">
+                        <div class="collapse collpase-container" id="collapse-show-{{ show_index }}-season-{{ season_index }}">
                             {% for episode_index, episode in enumerate(episodes) %}
                             <div class="row-container episode-row">
                                 <div class="checkbox-container episode-checkbox-container">

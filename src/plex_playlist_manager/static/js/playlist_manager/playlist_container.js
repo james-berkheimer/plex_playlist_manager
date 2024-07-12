@@ -4,9 +4,10 @@ console.log('Loading playlist_container.js');
 document.addEventListener('DOMContentLoaded', function() {
     var playlistItems = document.querySelectorAll('.playlist-item');
     var playlistContents = document.getElementById('playlistContent');
+    var topbarContents = document.getElementById('topbar-contents');
 
     playlistItems.forEach(function(playlistItem) {
-        playlistItem.addEventListener('click', function() {
+        playlistItem.addEventListener('click', async function() { // Mark this function as async
             // Remove the selected class from all items
             playlistItems.forEach(function(item) {
                 item.classList.remove('selected');
@@ -15,33 +16,53 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add the selected class to the clicked item
             this.classList.add('selected');
 
-            // Clear the playlistContent div
+            // Clear the playlistContent and topbarContents divs
             playlistContents.innerHTML = '';
+            topbarContents.innerHTML = '';
 
             // Get the playlist title and type
             var playlistTitle = this.textContent.trim();
             var playlistType = this.dataset.playlistType;
 
-            // Send a request to the server with the playlist title and type
-            fetch('/get_playlist_items', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    'playlist_title': playlistTitle,
-                    'playlist_type': playlistType
-                })
-            })
-            .then(response => response.text())
-            .then(data => {
-                // document.getElementById('playlistContent').innerHTML = data;
+            try {
+                // Send a request to the server with the playlist title and type
+                let response = await fetch('/get_playlist_items', { // Use await to wait for the fetch to complete
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        'playlist_title': playlistTitle,
+                        'playlist_type': playlistType
+                    })
+                });
+                let data = await response.text(); // Use await to wait for the text response
                 playlistContents.innerHTML = data;
-            })
-            .catch(error => console.error('Error:', error));
+
+                try {
+                    // Fetch additional details and update the topbar-contents element
+                    let detailsResponse = await fetch('/get_playlist_details', { // Use await here as well
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            'playlist_title': playlistTitle,
+                            'playlist_type': playlistType
+                        })
+                    });
+                    let detailsData = await detailsResponse.text(); // Wait for the text response
+                    topbarContents.innerHTML = detailsData;
+                } catch (error) {
+                    console.error('Error fetching playlist details:', error);
+                }
+            } catch (error) {
+                console.error('Error fetching playlist items:', error);
+            }
         });
     });
 });
+
 
 // -----------------------------------------------------------------------------------
 

@@ -29,11 +29,11 @@
                     </span>
                 </div>
                 <div class="artist-details-right">
-                    <span>Songs: 20</span>
+                    <span>Placeholder</span>
                 </div>
             </div>
         </div>
-        <div class="collapse" id="collapse-artist-{{ artist_index }}">
+        <div class="collapse collpase-container" id="collapse-artist-{{ artist_index }}">
             {% for album_index, (album, tracks) in enumerate(albums.items()) %}
             <div class="row-container album-row">
                 <div class="checkbox-container" id="album-checkbox-container">
@@ -65,7 +65,7 @@
                     </div>
                 </div>
             </div>
-            <div class="collapse" id="collapse-artist-{{ artist_index }}-album-{{ album_index }}">
+            <div class="collapse collpase-container" id="collapse-artist-{{ artist_index }}-album-{{ album_index }}">
                 {% for track in tracks %}
                 <div class="row-container track-row">
                     <div class="checkbox-container track-checkbox-containter">

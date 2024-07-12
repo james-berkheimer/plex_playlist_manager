@@ -39,5 +39,8 @@
     height: calc(100vh - 8%);
 }
 
+.collpase-container {
+    background: #3b3c3d;
+}
 
 
