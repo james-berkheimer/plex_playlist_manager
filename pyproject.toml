@@ -22,6 +22,7 @@ dependencies = [
     "click",
     "colorlog",
     "flask",
+    "flask-sqlalchemy",
     "flask-wtf",
     "plexapi",
     "redis"
