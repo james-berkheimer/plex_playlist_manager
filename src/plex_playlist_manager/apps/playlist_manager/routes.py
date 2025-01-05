@@ -3,7 +3,7 @@ from pprint import pprint
 from flask import Blueprint, abort, render_template, request
 
 from ...config import plex_server
-from ...plex.data import categorized_playlists, playlist_data, playlist_details
+from ...plex_old.data import categorized_playlists, playlist_data, playlist_details
 
 # all_playlist_data = get_playlist_data(plex_server)
 
@@ -26,9 +26,7 @@ def playlist_manager():
     pprint(categorized_playlists)
     if categorized_playlists is None:
         return abort(500, description="Error fetching categorized playlists")
-    return render_template(
-        "playlist_manager/playlist_manager_main.html", category_dict=category_dict
-    )
+    return render_template("playlist_manager/playlist_manager_main.html", category_dict=category_dict)
 
 
 @get_playlist_items_bp.route("/get_playlist_items", methods=["POST"])

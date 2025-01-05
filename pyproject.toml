@@ -1,17 +1,13 @@
 [build-system]
-requires = ["setuptools>=42", "wheel", "setuptools_scm"]
+requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
-
-# [tool.setuptools_scm]
-# write_to = "src/media_conveyor/version.py"
-# version_scheme = "release-branch-semver"
 
 [project]
 name = "plex_playlist_manager"
 description = "A tool for managing Plex playlists"
 authors = [{name = "James Berkheimer", email = "james.berkheimer@gmail.com"}]
 license = {text = "MIT"}
-dynamic = ["version"]
+version = "0.1.0"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -24,10 +20,18 @@ dependencies = [
     "flask",
     "flask-sqlalchemy",
     "flask-wtf",
-    "plexapi",
-    "redis"
+    "requests"
 ]
 
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "tox",
+    "build",
+    "pytest",
+    "coverage"
+]
 
 [project.readme]
 file = "README.md"
@@ -43,15 +47,6 @@ test4 = "plex_playlist_manager.scratch:test4"
 test5 = "plex_playlist_manager.scratch:test5"
 test6 = "plex_playlist_manager.scratch:test6"
 ktest = "plex_playlist_manager.guis.kivy_test:main"
-
-[project.optional-dependencies]
-dev = [
-    "ruff",
-    "tox",
-    "build",
-    "pytest",
-    "coverage"
-]
 
 [tool.setuptools]
 include-package-data = true
@@ -99,7 +94,10 @@ ignore = [
     "E203",
     "E501",
     "E722",
+    "F401",
     "N802",
-    "F401"
+    "N803",
+    "N803",
+    "N806",
 ]
 line-length = 100

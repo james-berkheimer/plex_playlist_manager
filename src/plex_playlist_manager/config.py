@@ -3,15 +3,13 @@ import os
 
 from plexapi.server import PlexServer
 
-from .plex.authentication import (
+from .plex_old.authentication import (
     AuthenticationError,
     PlexAuthentication,
 )
 from .utils.logging import LOGGER
 
-cred_path = (
-    "/home/james/code/plex_playlist_manager/tests/.plex_cred/credentials.json"  # for development
-)
+cred_path = "/home/james/code/plex_playlist_manager/tests/.plex_cred/credentials.json"  # for development
 
 
 def set_env_vars_from_json(cred_path):

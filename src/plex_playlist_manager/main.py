@@ -21,6 +21,3 @@ def main(debugger, host, port):
     if debugger:
         os.environ["FLASK_DEBUG"] = "1"
     os.system("flask run")
-
-    sys.argv = ["flask", "run"]
-    os.system(" ".join(sys.argv))
