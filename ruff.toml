@@ -1,7 +1,7 @@
 # Basic configuration
 line-length = 105
 indent-width = 4
-target-version = "py312"
+target-version = "py313"
 fix = true
 unsafe-fixes = true
 
