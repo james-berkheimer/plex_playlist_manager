@@ -1,6 +1,6 @@
-import os
-from pathlib import Path
 
+from pathlib import Path
+import os
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.server import PlexServer
 from PyQt6.QtWidgets import QApplication
