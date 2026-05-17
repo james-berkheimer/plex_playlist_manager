@@ -133,4 +133,4 @@ cython_debug/
 .vscode/
 
 # Plex_Playlist_manager
-credentials.json
+.plex-credentials.json
