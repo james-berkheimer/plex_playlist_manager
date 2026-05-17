@@ -107,6 +107,18 @@ section-order = [
 ]
 combine-as-imports = true
 
+[lint.flake8-bugbear]
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.Header",
+    "fastapi.Cookie",
+    "fastapi.Body",
+    "fastapi.Form",
+    "fastapi.File",
+]
+
 [lint.flake8-annotations]
 mypy-init-return = true
 suppress-none-returning = false

@@ -11,31 +11,35 @@ from plex_playlist_manager.plex_client import PlexClient
 
 
 async def main() -> None:
-    import json
+    from plex_playlist_manager.models import (
+        PlexPlaylistSummary,
+        PlexTrackItem,
+        build_playlist_tree,
+    )
 
     client = PlexClient(get_settings())
     try:
-        data = await client.get_playlists()
-        playlists = data["MediaContainer"].get("Metadata", [])
+        raw_playlists = await client.get_playlists()
+        playlists = [PlexPlaylistSummary.model_validate(p) for p in raw_playlists]
+        target = next(p for p in playlists if p.title == "Optima Cantica")
 
-        target = next(p for p in playlists if p.get("title") == "Optima Cantica")
-        playlist_id = target["ratingKey"]
-        print(f"Inspecting playlist: {target['title']} (id={playlist_id})")
-        print(f"smart={target.get('smart')}, leafCount={target.get('leafCount')}")
+        raw_items = await client.get_playlist_items(target.rating_key)
+        tracks = [PlexTrackItem.model_validate(item) for item in raw_items]
+        tree = build_playlist_tree(target.rating_key, target.title, tracks)
 
-        items_data = await client.get_playlist_items(playlist_id)
-        container = items_data["MediaContainer"]
-        print("\nMediaContainer top-level keys and values:")
-        for key, value in container.items():
-            if key != "Metadata":
-                print(f"  {key}: {value!r}")
+        print(f"Letters present: {tree.letters_present}\n")
 
-        items = container.get("Metadata", [])
-        print(f"\nReturned items count: {len(items)}")
+        print("Bucket assignments (first 5 per letter):")
+        from collections import defaultdict
 
-        if items:
-            print("\nFirst item full JSON:")
-            print(json.dumps(items[0], indent=2))
+        by_letter: dict[str, list[str]] = defaultdict(list)
+        for artist in tree.artists:
+            by_letter[artist.bucket_letter].append(artist.name)
+
+        for letter in tree.letters_present:
+            names = by_letter[letter]
+            sample = ", ".join(names[:5])
+            print(f"  {letter}: ({len(names)}) {sample}")
     finally:
         await client.close()
 

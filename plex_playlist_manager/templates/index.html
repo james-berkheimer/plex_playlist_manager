@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<aside class="w-80 bg-plex-surface border-r border-plex-border overflow-y-auto">
+    <div class="px-6 py-4 border-b border-plex-border">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-plex-muted">
+            Playlists
+        </h2>
+    </div>
+    <nav>
+        {% if playlists %}
+        <ul>
+            {% for playlist in playlists %}
+            <li>
+                <button class="w-full text-left px-6 py-3 border-b border-plex-border hover:bg-plex-elevated transition-colors group cursor-pointer"
+                        hx-get="/playlists/{{ playlist.rating_key }}/tree" hx-target="#tree-container"
+                        hx-swap="innerHTML" hx-indicator="#tree-loading">
+                    <div class="font-medium group-hover:text-plex-accent transition-colors">
+                        {{ playlist.title }}
+                    </div>
+                    <div class="text-xs text-plex-muted mt-0.5">
+                        {{ playlist.track_count }} tracks
+                    </div>
+                </button>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="px-6 py-4 text-sm text-plex-muted">
+            No editable music playlists found.
+        </p>
+        {% endif %}
+    </nav>
+</aside>
+
+<section class="flex-1 overflow-y-auto px-8 py-6">
+    <div id="tree-loading" class="htmx-indicator text-plex-muted text-sm mb-4">
+        Loading playlist...
+    </div>
+    <div id="tree-container">
+        <p class="text-plex-muted">
+            Select a playlist on the left to view its contents.
+        </p>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,110 @@
+{# Macro to format millisecond durations as H:MM:SS or M:SS #}
+{% macro format_duration(ms) -%}
+{%- set total_seconds = (ms // 1000) -%}
+{%- set hours = total_seconds // 3600 -%}
+{%- set minutes = (total_seconds % 3600) // 60 -%}
+{%- set seconds = total_seconds % 60 -%}
+{%- if hours > 0 -%}
+{{ hours }}:{{ "%02d" % minutes }}:{{ "%02d" % seconds }}
+{%- else -%}
+{{ minutes }}:{{ "%02d" % seconds }}
+{%- endif -%}
+{%- endmacro %}
+
+<div x-data="{ selectedLetter: 'ALL' }">
+    <header class="mb-6 pb-4 border-b border-plex-border">
+        <h2 class="text-2xl font-semibold">{{ tree.title }}</h2>
+        <p class="text-sm text-plex-muted mt-1">
+            {{ tree.artists | length }} artists -
+            {{ tree.track_count }} tracks -
+            {{ format_duration(tree.duration_ms) }}
+        </p>
+    </header>
+
+    <nav class="sticky top-0 z-10 bg-plex-bg py-3 mb-4 border-b border-plex-border">
+        <div class="flex flex-wrap gap-1">
+            <button type="button" @click="selectedLetter = 'ALL'" :class="selectedLetter === 'ALL'
+                    ? 'bg-plex-accent text-plex-bg'
+                    : 'bg-plex-surface text-plex-text hover:bg-plex-elevated'"
+                    class="px-3 py-1 text-xs font-semibold rounded transition-colors cursor-pointer">
+                ALL
+            </button>
+            {% set all_letters = ['#'] + ('ABCDEFGHIJKLMNOPQRSTUVWXYZ' | list) %}
+            {% for letter in all_letters %}
+            {% set present = letter in tree.letters_present %}
+            <button type="button" {% if present %} @click="selectedLetter = '{{ letter }}'" :class="selectedLetter === '{{ letter }}'
+                        ? 'bg-plex-accent text-plex-bg'
+                        : 'bg-plex-surface text-plex-text hover:bg-plex-elevated'"
+                    class="px-2.5 py-1 text-xs font-semibold rounded transition-colors cursor-pointer w-8"
+                    {% else %} disabled
+                    class="px-2.5 py-1 text-xs font-semibold rounded w-8 text-plex-muted opacity-30 cursor-not-allowed"
+                    {% endif %}>
+                {{ letter }}
+            </button>
+            {% endfor %}
+        </div>
+    </nav>
+
+    <div class="space-y-1">
+        {% for artist in tree.artists %}
+        <details class="group"
+                 x-show="selectedLetter === 'ALL' || selectedLetter === '{{ artist.bucket_letter }}'">
+            <summary
+                     class="cursor-pointer px-3 py-2 rounded hover:bg-plex-surface flex items-center gap-2 select-none">
+                <span class="text-plex-muted group-open:rotate-90 transition-transform inline-block w-3">
+                    &#9656;
+                </span>
+                <span class="font-semibold flex-1">{{ artist.name }}</span>
+                <span class="text-xs text-plex-muted">
+                    {{ artist.albums | length }} albums - {{ artist.track_count }} tracks
+                </span>
+            </summary>
+
+            <div class="ml-6 mt-1 space-y-1">
+                {% for album in artist.albums %}
+                <details class="group/album">
+                    <summary
+                             class="cursor-pointer px-3 py-1.5 rounded hover:bg-plex-surface flex items-center gap-2 select-none">
+                        <span
+                              class="text-plex-muted group-open/album:rotate-90 transition-transform inline-block w-3">
+                            &#9656;
+                        </span>
+                        <span class="flex-1">
+                            {{ album.title }}
+                            {% if album.year %}
+                            <span class="text-plex-muted text-sm">({{ album.year }})</span>
+                            {% endif %}
+                        </span>
+                        <span class="text-xs text-plex-muted">
+                            {{ album.tracks | length }} tracks
+                        </span>
+                    </summary>
+
+                    <ul class="ml-6 mt-1">
+                        {% for track in album.tracks %}
+                        <li
+                            class="px-3 py-1 flex items-center gap-3 text-sm hover:bg-plex-surface rounded">
+                            <span class="text-plex-muted w-8 text-right text-xs">
+                                {%- if track.disc_number and track.disc_number > 1 -%}
+                                {{ track.disc_number }}.{{ "%02d" % track.track_number if
+                                track.track_number else "??" }}
+                                {%- elif track.track_number -%}
+                                {{ "%02d" % track.track_number }}
+                                {%- else -%}
+                                -
+                                {%- endif -%}
+                            </span>
+                            <span class="flex-1">{{ track.title }}</span>
+                            <span class="text-plex-muted text-xs">
+                                {{ format_duration(track.duration_ms) }}
+                            </span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </details>
+                {% endfor %}
+            </div>
+        </details>
+        {% endfor %}
+    </div>
+</div>

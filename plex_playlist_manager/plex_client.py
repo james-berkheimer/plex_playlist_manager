@@ -30,10 +30,59 @@ class PlexClient:
         response.raise_for_status()
         return response.json()
 
-    async def get_playlists(self) -> dict[str, Any]:
-        """Return the raw MediaContainer for all playlists on the server."""
-        return await self._get("/playlists")
+    async def get_playlists(self) -> list[dict[str, Any]]:
+        """Return non-smart music playlists from the server.
 
-    async def get_playlist_items(self, playlist_id: int | str) -> dict[str, Any]:
-        """Return the raw MediaContainer for all items in a playlist."""
-        return await self._get(f"/playlists/{playlist_id}/items")
+        Smart playlists are excluded because they cannot be edited via the API.
+
+        Returns:
+            A list of playlist Metadata dicts.
+        """
+        response = await self._client.get(
+            "/playlists",
+            params={"playlistType": "audio"},
+        )
+        response.raise_for_status()
+        container = response.json()["MediaContainer"]
+        playlists = container.get("Metadata", [])
+        return [p for p in playlists if not p.get("smart")]
+
+    async def get_playlist_items(
+        self,
+        playlist_id: int | str,
+        page_size: int = 500,
+    ) -> list[dict[str, Any]]:
+        """Return all items in a playlist, transparently handling pagination.
+
+        Args:
+            playlist_id: The Plex playlist ratingKey.
+            page_size: Number of items to request per page.
+
+        Returns:
+            A flat list of item dicts (Plex Metadata entries).
+        """
+        items: list[dict[str, Any]] = []
+        start = 0
+
+        while True:
+            params = {
+                "X-Plex-Container-Start": start,
+                "X-Plex-Container-Size": page_size,
+            }
+            response = await self._client.get(
+                f"/playlists/{playlist_id}/items",
+                params=params,
+            )
+            response.raise_for_status()
+            container = response.json()["MediaContainer"]
+
+            page_items = container.get("Metadata", [])
+            items.extend(page_items)
+
+            total_size = container.get("totalSize", container.get("size", len(items)))
+            if len(items) >= total_size or not page_items:
+                break
+
+            start += page_size
+
+        return items
