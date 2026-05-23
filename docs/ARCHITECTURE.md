@@ -154,6 +154,63 @@ Settings are loaded via `pydantic-settings` and validated at import time
 
 ---
 
+## Deployment
+
+The intended deployment target is a Proxmox LXC container on the
+developer's home server. The Plex Media Server itself runs in an LXC
+container on the same Proxmox host.
+
+### Two placement options
+
+**Option A: run inside the existing Plex LXC.**
+
+The app runs in the same container as Plex.
+
+Advantages:
+- Filesystem paths to media files match exactly with no mount
+  configuration — the app sees the same paths Plex sees.
+- `PLEX_BASE_URL` can point at `http://127.0.0.1:32400`.
+- Fewer moving parts: one container to back up, snapshot, and maintain.
+
+Disadvantages:
+- Less isolation: a misbehaving build of this app can affect the Plex
+  process.
+- Plex container updates (Plex's own upgrades) might churn the
+  environment around the app.
+
+**Option B: run in a dedicated LXC.**
+
+The app runs in its own container alongside Plex.
+
+Advantages:
+- Clean isolation. The app's Python environment, dependencies, and any
+  future package additions don't touch the Plex container.
+- Independent lifecycle: this container can be restarted, snapshotted,
+  rebuilt, or destroyed without touching Plex.
+
+Disadvantages:
+- The media library directory must be explicitly bind-mounted into the
+  container at the same path Plex uses, otherwise track file paths from
+  Plex's metadata won't resolve. This is the critical configuration step
+  for filesystem-based playback.
+- `PLEX_BASE_URL` must point at the Plex container's IP and port.
+
+**Current leaning:** Option A (inside the existing Plex LXC), since path
+matching is automatic and the isolation tradeoff is acceptable for a
+single-user local tool. Not yet committed.
+
+### Requirements regardless of placement
+
+- Python 3.13 available in the container.
+- The `.env` file with `PLEX_BASE_URL` and `PLEX_TOKEN` configured.
+- The `ppm` console script bound to `127.0.0.1:8765` by default. To expose
+  the app to other machines on the LAN, change the bind host in
+  `main.py`'s `run()` function or add a reverse proxy.
+- Filesystem read access to the Plex media library paths (only required
+  for future playback features).
+
+---
+
 ## Current capabilities
 
 ### Browse
