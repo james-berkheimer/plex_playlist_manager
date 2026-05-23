@@ -35,46 +35,15 @@ click is the Alpine @click handler expression. #}
 </button>
 {%- endmacro %}
 
-<div x-data="{
-        selectedLetter: 'ALL',
-        selected: new Set(),
-        toggleTrack(id) {
-            if (this.selected.has(id)) {
-                this.selected.delete(id);
-            } else {
-                this.selected.add(id);
-            }
-        },
-        toggleGroup(idsAttr) {
-            const ids = idsAttr.split(',').filter(s => s.length).map(Number);
-            const state = this.groupState(ids);
-            if (state === 'checked') {
-                ids.forEach(id => this.selected.delete(id));
-            } else {
-                ids.forEach(id => this.selected.add(id));
-            }
-        },
-        groupState(ids) {
-            if (ids.length === 0) return 'unchecked';
-            let hits = 0;
-            for (const id of ids) {
-                if (this.selected.has(id)) hits++;
-            }
-            if (hits === 0) return 'unchecked';
-            if (hits === ids.length) return 'checked';
-            return 'partial';
-        },
-        trackState(id) {
-            return this.selected.has(id) ? 'checked' : 'unchecked';
-        }
-     }">
+<div x-data="playlistTree()" data-tree-root data-playlist-id="{{ tree.rating_key }}">
     <header class="mb-6 pb-4 border-b border-plex-border flex items-start gap-6">
         <div class="shrink-0">
             <h2 class="text-2xl font-semibold">{{ tree.title }}</h2>
             <p class="text-sm text-plex-muted mt-1">
-                {{ tree.artists | length }} artists -
-                {{ tree.track_count }} tracks -
-                {{ format_duration(tree.duration_ms) }}
+                <span data-header-artist-count>{{ tree.artists | length }}</span> artists -
+                <span data-header-track-count>{{ tree.track_count }}</span> tracks -
+                <span data-header-duration data-duration-ms="{{ tree.duration_ms }}">{{
+                    format_duration(tree.duration_ms) }}</span>
             </p>
         </div>
 
@@ -96,19 +65,7 @@ click is the Alpine @click handler expression. #}
             <div class="flex items-center gap-3">
                 <button type="button"
                         class="px-3 py-1 text-xs font-semibold bg-plex-accent text-plex-bg rounded hover:bg-plex-accentHi transition-colors cursor-pointer"
-                        @click="
-                            const params = new URLSearchParams();
-                            for (const id of selected) {
-                                params.append('playlist_item_id', id);
-                            }
-                            const url = '/playlists/{{ tree.rating_key }}/items?' + params.toString();
-                            htmx.ajax('DELETE', url, {
-                                target: '#tree-container',
-                                swap: 'innerHTML',
-                                indicator: '#tree-loading'
-                            });
-                            selected = new Set();
-                        ">
+                        @click="remove({{ tree.rating_key }})">
                     Remove
                 </button>
                 <button type="button" @click="selected = new Set()"
@@ -130,7 +87,8 @@ click is the Alpine @click handler expression. #}
             {% set all_letters = ['#'] + ('ABCDEFGHIJKLMNOPQRSTUVWXYZ' | list) %}
             {% for letter in all_letters %}
             {% set present = letter in tree.letters_present %}
-            <button type="button" {% if present %} @click="selectedLetter = '{{ letter }}'" :class="selectedLetter === '{{ letter }}'
+            <button type="button" data-letter-button="{{ letter }}" {% if present %}
+                    @click="selectedLetter = '{{ letter }}'" :class="selectedLetter === '{{ letter }}'
                         ? 'bg-plex-accent text-plex-bg'
                         : 'bg-plex-surface text-plex-text hover:bg-plex-elevated'"
                     class="px-2.5 py-1 text-xs font-semibold rounded transition-colors cursor-pointer w-8"
@@ -148,7 +106,7 @@ click is the Alpine @click handler expression. #}
         {% set artist_ids = artist.albums | map(attribute='tracks') | sum(start=[]) |
         map(attribute='playlist_item_id') | select | list %}
         {% set artist_ids_attr = artist_ids | join(',') %}
-        <details class="group"
+        <details class="group" data-artist-node data-bucket-letter="{{ artist.bucket_letter }}"
                  x-show="selectedLetter === 'ALL' || selectedLetter === '{{ artist.bucket_letter }}'">
             <summary
                      class="cursor-pointer px-3 py-2 rounded hover:bg-plex-surface flex items-center gap-2 select-none">
@@ -159,7 +117,8 @@ click is the Alpine @click handler expression. #}
                 </span>
                 <span class="font-semibold flex-1">{{ artist.name }}</span>
                 <span class="text-xs text-plex-muted">
-                    {{ artist.albums | length }} albums - {{ artist.track_count }} tracks
+                    <span data-artist-album-count>{{ artist.albums | length }}</span> albums -
+                    <span data-artist-track-count>{{ artist.track_count }}</span> tracks
                 </span>
             </summary>
 
@@ -167,7 +126,7 @@ click is the Alpine @click handler expression. #}
                 {% for album in artist.albums %}
                 {% set album_ids = album.tracks | map(attribute='playlist_item_id') | select | list %}
                 {% set album_ids_attr = album_ids | join(',') %}
-                <details class="group/album">
+                <details class="group/album" data-album-node>
                     <summary
                              class="cursor-pointer px-3 py-1.5 rounded hover:bg-plex-surface flex items-center gap-2 select-none">
                         {{ selector("groupState([" ~ album_ids_attr ~ "])",
@@ -183,13 +142,15 @@ click is the Alpine @click handler expression. #}
                             {% endif %}
                         </span>
                         <span class="text-xs text-plex-muted">
-                            {{ album.tracks | length }} tracks
+                            <span data-album-track-count>{{ album.tracks | length }}</span> tracks
                         </span>
                     </summary>
 
                     <ul class="ml-6 mt-1">
                         {% for track in album.tracks %}
-                        <li
+                        <li data-track-row {% if track.playlist_item_id is not none
+                            %}data-playlist-item-id="{{ track.playlist_item_id }}" {% endif %}
+                            data-duration-ms="{{ track.duration_ms }}"
                             class="px-3 py-1 flex items-center gap-3 text-sm hover:bg-plex-surface rounded">
                             {% if track.playlist_item_id is not none %}
                             {{ selector("trackState(" ~ track.playlist_item_id ~ ")",

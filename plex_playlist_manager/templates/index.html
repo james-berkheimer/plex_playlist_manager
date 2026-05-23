@@ -11,7 +11,7 @@
         {% if playlists %}
         <ul>
             {% for playlist in playlists %}
-            <li>
+            <li data-sidebar-playlist-id="{{ playlist.rating_key }}">
                 <button class="w-full text-left px-6 py-3 border-b border-plex-border hover:bg-plex-elevated transition-colors group cursor-pointer"
                         hx-get="/playlists/{{ playlist.rating_key }}/tree" hx-target="#tree-container"
                         hx-swap="innerHTML" hx-indicator="#tree-loading">
@@ -19,7 +19,7 @@
                         {{ playlist.title }}
                     </div>
                     <div class="text-xs text-plex-muted mt-0.5">
-                        {{ playlist.track_count }} tracks
+                        <span data-sidebar-track-count>{{ playlist.track_count }}</span> tracks
                     </div>
                 </button>
             </li>

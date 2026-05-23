@@ -2,7 +2,7 @@
 
 import logging
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Query, Request, Response, status
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
@@ -59,22 +59,24 @@ async def playlist_tree(
     )
 
 
-@router.delete("/playlists/{playlist_id}/items", response_class=HTMLResponse)
+@router.delete(
+    "/playlists/{playlist_id}/items",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 async def delete_items(
-    request: Request,
     playlist_id: str,
     playlist_item_id: list[int] = Query(...),
     client: PlexClient = Depends(_get_plex_client),
-    templates: Jinja2Templates = Depends(_get_templates),
-) -> HTMLResponse:
-    """Delete one or more items from a playlist, then re-render the tree.
+) -> Response:
+    """Delete one or more items from a playlist.
 
     Accepts repeated query parameters:
         ?playlist_item_id=123&playlist_item_id=456
 
     Deletions run sequentially. Failures are logged and recorded but do not
-    abort the batch. After processing, the full updated tree is returned as
-    HTML for HTMX to swap into the page.
+    abort the batch. Returns 204 No Content on success; the client performs
+    surgical DOM removal and reconciliation rather than re-rendering the
+    tree.
     """
     result = await delete_playlist_items(client, playlist_id, playlist_item_id)
     logger.info(
@@ -82,10 +84,4 @@ async def delete_items(
         f"{len(result.succeeded)} succeeded, {len(result.failed)} failed "
         f"(attempted {result.total_attempted})"
     )
-
-    tree = await get_playlist_tree(client, playlist_id)
-    return templates.TemplateResponse(
-        request,
-        "partials/playlist_tree.html",
-        {"tree": tree},
-    )
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
