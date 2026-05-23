@@ -86,3 +86,23 @@ class PlexClient:
             start += page_size
 
         return items
+
+    async def delete_playlist_item(
+        self,
+        playlist_id: int | str,
+        playlist_item_id: int | str,
+    ) -> None:
+        """Remove a single item from a playlist.
+
+        Wraps DELETE /playlists/{playlist_id}/items/{playlist_item_id}.
+        Raises httpx.HTTPStatusError if Plex returns a non-2xx response.
+
+        Args:
+            playlist_id: The Plex playlist ratingKey.
+            playlist_item_id: The per-playlist item identifier (playlistItemID).
+                This is NOT the track's ratingKey.
+        """
+        response = await self._client.delete(
+            f"/playlists/{playlist_id}/items/{playlist_item_id}",
+        )
+        response.raise_for_status()

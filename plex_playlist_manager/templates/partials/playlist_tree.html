@@ -11,14 +11,112 @@
 {%- endif -%}
 {%- endmacro %}
 
-<div x-data="{ selectedLetter: 'ALL' }">
-    <header class="mb-6 pb-4 border-b border-plex-border">
-        <h2 class="text-2xl font-semibold">{{ tree.title }}</h2>
-        <p class="text-sm text-plex-muted mt-1">
-            {{ tree.artists | length }} artists -
-            {{ tree.track_count }} tracks -
-            {{ format_duration(tree.duration_ms) }}
-        </p>
+{# Macro to render the Plex-style circular selector.
+state is 'checked', 'partial', or 'unchecked' (Alpine expression).
+click is the Alpine @click handler expression. #}
+{% macro selector(state_expr, click_expr) -%}
+<button type="button" @click.stop="{{ click_expr }}"
+        class="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors cursor-pointer"
+        :class="{
+            'bg-plex-accent border-plex-accent': {{ state_expr }} === 'checked' || {{ state_expr }} === 'partial',
+            'border-plex-muted hover:border-plex-text': {{ state_expr }} === 'unchecked'
+        }">
+    <svg x-show="{{ state_expr }} === 'checked'" xmlns="http://www.w3.org/2000/svg"
+         class="w-3 h-3 text-plex-bg" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd"
+              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+              clip-rule="evenodd" />
+    </svg>
+    <svg x-show="{{ state_expr }} === 'partial'" xmlns="http://www.w3.org/2000/svg"
+         class="w-3 h-3 text-plex-bg" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+              clip-rule="evenodd" />
+    </svg>
+</button>
+{%- endmacro %}
+
+<div x-data="{
+        selectedLetter: 'ALL',
+        selected: new Set(),
+        toggleTrack(id) {
+            if (this.selected.has(id)) {
+                this.selected.delete(id);
+            } else {
+                this.selected.add(id);
+            }
+        },
+        toggleGroup(idsAttr) {
+            const ids = idsAttr.split(',').filter(s => s.length).map(Number);
+            const state = this.groupState(ids);
+            if (state === 'checked') {
+                ids.forEach(id => this.selected.delete(id));
+            } else {
+                ids.forEach(id => this.selected.add(id));
+            }
+        },
+        groupState(ids) {
+            if (ids.length === 0) return 'unchecked';
+            let hits = 0;
+            for (const id of ids) {
+                if (this.selected.has(id)) hits++;
+            }
+            if (hits === 0) return 'unchecked';
+            if (hits === ids.length) return 'checked';
+            return 'partial';
+        },
+        trackState(id) {
+            return this.selected.has(id) ? 'checked' : 'unchecked';
+        }
+     }">
+    <header class="mb-6 pb-4 border-b border-plex-border flex items-start gap-6">
+        <div class="shrink-0">
+            <h2 class="text-2xl font-semibold">{{ tree.title }}</h2>
+            <p class="text-sm text-plex-muted mt-1">
+                {{ tree.artists | length }} artists -
+                {{ tree.track_count }} tracks -
+                {{ format_duration(tree.duration_ms) }}
+            </p>
+        </div>
+
+        <div x-show="selected.size > 0" x-cloak
+             class="flex-1 flex items-center justify-between gap-4 bg-plex-surface border border-plex-accent rounded px-4 py-2">
+            <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-plex-accent"
+                     viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clip-rule="evenodd" />
+                </svg>
+                <span class="text-sm font-semibold text-plex-accent">
+                    <span x-text="selected.size"></span>
+                    <span x-text="selected.size === 1 ? 'track' : 'tracks'"></span>
+                    selected
+                </span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="button"
+                        class="px-3 py-1 text-xs font-semibold bg-plex-accent text-plex-bg rounded hover:bg-plex-accentHi transition-colors cursor-pointer"
+                        @click="
+                            const params = new URLSearchParams();
+                            for (const id of selected) {
+                                params.append('playlist_item_id', id);
+                            }
+                            const url = '/playlists/{{ tree.rating_key }}/items?' + params.toString();
+                            htmx.ajax('DELETE', url, {
+                                target: '#tree-container',
+                                swap: 'innerHTML',
+                                indicator: '#tree-loading'
+                            });
+                            selected = new Set();
+                        ">
+                    Remove
+                </button>
+                <button type="button" @click="selected = new Set()"
+                        class="text-xs text-plex-muted hover:text-plex-text transition-colors cursor-pointer">
+                    Deselect All
+                </button>
+            </div>
+        </div>
     </header>
 
     <nav class="sticky top-0 z-10 bg-plex-bg py-3 mb-4 border-b border-plex-border">
@@ -47,10 +145,15 @@
 
     <div class="space-y-1">
         {% for artist in tree.artists %}
+        {% set artist_ids = artist.albums | map(attribute='tracks') | sum(start=[]) |
+        map(attribute='playlist_item_id') | select | list %}
+        {% set artist_ids_attr = artist_ids | join(',') %}
         <details class="group"
                  x-show="selectedLetter === 'ALL' || selectedLetter === '{{ artist.bucket_letter }}'">
             <summary
                      class="cursor-pointer px-3 py-2 rounded hover:bg-plex-surface flex items-center gap-2 select-none">
+                {{ selector("groupState([" ~ artist_ids_attr ~ "])",
+                "toggleGroup('" ~ artist_ids_attr ~ "')") }}
                 <span class="text-plex-muted group-open:rotate-90 transition-transform inline-block w-3">
                     &#9656;
                 </span>
@@ -62,9 +165,13 @@
 
             <div class="ml-6 mt-1 space-y-1">
                 {% for album in artist.albums %}
+                {% set album_ids = album.tracks | map(attribute='playlist_item_id') | select | list %}
+                {% set album_ids_attr = album_ids | join(',') %}
                 <details class="group/album">
                     <summary
                              class="cursor-pointer px-3 py-1.5 rounded hover:bg-plex-surface flex items-center gap-2 select-none">
+                        {{ selector("groupState([" ~ album_ids_attr ~ "])",
+                        "toggleGroup('" ~ album_ids_attr ~ "')") }}
                         <span
                               class="text-plex-muted group-open/album:rotate-90 transition-transform inline-block w-3">
                             &#9656;
@@ -84,6 +191,12 @@
                         {% for track in album.tracks %}
                         <li
                             class="px-3 py-1 flex items-center gap-3 text-sm hover:bg-plex-surface rounded">
+                            {% if track.playlist_item_id is not none %}
+                            {{ selector("trackState(" ~ track.playlist_item_id ~ ")",
+                            "toggleTrack(" ~ track.playlist_item_id ~ ")") }}
+                            {% else %}
+                            <span class="w-5 h-5 shrink-0"></span>
+                            {% endif %}
                             <span class="text-plex-muted w-8 text-right text-xs">
                                 {%- if track.disc_number and track.disc_number > 1 -%}
                                 {{ track.disc_number }}.{{ "%02d" % track.track_number if

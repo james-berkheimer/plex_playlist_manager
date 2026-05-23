@@ -1,14 +1,19 @@
 """HTTP routes for the playlists feature."""
 
-from fastapi import APIRouter, Depends, Request
+import logging
+
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from plex_playlist_manager.plex_client import PlexClient
 from plex_playlist_manager.services import (
+    delete_playlist_items,
     get_playlist_summaries,
     get_playlist_tree,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -46,6 +51,38 @@ async def playlist_tree(
     templates: Jinja2Templates = Depends(_get_templates),
 ) -> HTMLResponse:
     """Render the Artist -> Album -> Track tree for a playlist as a partial."""
+    tree = await get_playlist_tree(client, playlist_id)
+    return templates.TemplateResponse(
+        request,
+        "partials/playlist_tree.html",
+        {"tree": tree},
+    )
+
+
+@router.delete("/playlists/{playlist_id}/items", response_class=HTMLResponse)
+async def delete_items(
+    request: Request,
+    playlist_id: str,
+    playlist_item_id: list[int] = Query(...),
+    client: PlexClient = Depends(_get_plex_client),
+    templates: Jinja2Templates = Depends(_get_templates),
+) -> HTMLResponse:
+    """Delete one or more items from a playlist, then re-render the tree.
+
+    Accepts repeated query parameters:
+        ?playlist_item_id=123&playlist_item_id=456
+
+    Deletions run sequentially. Failures are logged and recorded but do not
+    abort the batch. After processing, the full updated tree is returned as
+    HTML for HTMX to swap into the page.
+    """
+    result = await delete_playlist_items(client, playlist_id, playlist_item_id)
+    logger.info(
+        f"Delete batch for playlist {playlist_id}: "
+        f"{len(result.succeeded)} succeeded, {len(result.failed)} failed "
+        f"(attempted {result.total_attempted})"
+    )
+
     tree = await get_playlist_tree(client, playlist_id)
     return templates.TemplateResponse(
         request,

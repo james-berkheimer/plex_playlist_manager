@@ -11,35 +11,53 @@ from plex_playlist_manager.plex_client import PlexClient
 
 
 async def main() -> None:
-    from plex_playlist_manager.models import (
-        PlexPlaylistSummary,
-        PlexTrackItem,
-        build_playlist_tree,
-    )
+    from plex_playlist_manager.models import PlexPlaylistSummary, PlexTrackItem
+    from plex_playlist_manager.services import delete_playlist_items
 
     client = PlexClient(get_settings())
     try:
         raw_playlists = await client.get_playlists()
         playlists = [PlexPlaylistSummary.model_validate(p) for p in raw_playlists]
-        target = next(p for p in playlists if p.title == "Optima Cantica")
+        target = next(p for p in playlists if p.title == "Test_01")
 
-        raw_items = await client.get_playlist_items(target.rating_key)
-        tracks = [PlexTrackItem.model_validate(item) for item in raw_items]
-        tree = build_playlist_tree(target.rating_key, target.title, tracks)
+        raw_items_before = await client.get_playlist_items(target.rating_key)
+        tracks_before = [PlexTrackItem.model_validate(item) for item in raw_items_before]
+        print(f"Before: {len(tracks_before)} tracks in '{target.title}'")
 
-        print(f"Letters present: {tree.letters_present}\n")
+        victims = [t for t in tracks_before[-2:] if t.playlist_item_id is not None]
+        if len(victims) < 2:
+            print("ERROR: need at least 2 deletable tracks at end of playlist.")
+            return
 
-        print("Bucket assignments (first 5 per letter):")
-        from collections import defaultdict
+        bogus_id = 999999999
+        ids_to_delete = [victims[0].playlist_item_id, bogus_id, victims[1].playlist_item_id]
 
-        by_letter: dict[str, list[str]] = defaultdict(list)
-        for artist in tree.artists:
-            by_letter[artist.bucket_letter].append(artist.name)
+        print(f"Deleting playlistItemIDs: {ids_to_delete}")
+        print(f"  (middle ID {bogus_id} is bogus and should fail)")
 
-        for letter in tree.letters_present:
-            names = by_letter[letter]
-            sample = ", ".join(names[:5])
-            print(f"  {letter}: ({len(names)}) {sample}")
+        result = await delete_playlist_items(client, target.rating_key, ids_to_delete)
+
+        print(f"\nResult:")
+        print(f"  total_attempted: {result.total_attempted}")
+        print(f"  succeeded ({len(result.succeeded)}): {result.succeeded}")
+        print(f"  failed ({len(result.failed)}):")
+        for item_id, message in result.failed:
+            print(f"    {item_id}: {message}")
+
+        raw_items_after = await client.get_playlist_items(target.rating_key)
+        tracks_after = [PlexTrackItem.model_validate(item) for item in raw_items_after]
+        print(f"\nAfter: {len(tracks_after)} tracks in '{target.title}'")
+
+        delta = len(tracks_before) - len(tracks_after)
+        print(f"Delta: {delta} (expected 2)")
+
+        remaining_ids = {t.playlist_item_id for t in tracks_after}
+        for victim in victims:
+            still_present = victim.playlist_item_id in remaining_ids
+            print(
+                f"  playlistItemID={victim.playlist_item_id} still present: "
+                f"{still_present} (expected False)"
+            )
     finally:
         await client.close()
 
