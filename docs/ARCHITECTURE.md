@@ -31,7 +31,7 @@ direct file access for future features like playback.
 
 | Layer            | Choice                                | Rationale                                                |
 | ---------------- | ------------------------------------- | -------------------------------------------------------- |
-| Language         | Python 3.13                           | Newest stable with full ecosystem support                |
+| Language         | Python 3.12+                          | Matches the shared jb-tools LXC (Ubuntu 24.04) baseline  |
 | Web framework    | FastAPI                               | Async, type-driven, pairs well with Jinja2               |
 | Server           | uvicorn                               | Standard async server for FastAPI                        |
 | Templates        | Jinja2                                | Native FastAPI integration                               |
@@ -201,7 +201,7 @@ single-user local tool. Not yet committed.
 
 ### Requirements regardless of placement
 
-- Python 3.13 available in the container.
+- Python 3.12+ available in the container.
 - The `.env` file with `PLEX_BASE_URL` and `PLEX_TOKEN` configured.
 - The `ppm` console script bound to `127.0.0.1:8765` by default. To expose
   the app to other machines on the LAN, change the bind host in
