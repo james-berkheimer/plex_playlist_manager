@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//home/james/.ssh/**)",
+      "Bash(ping -c1 -W1 192.168.1.100)",
+      "Bash(chmod +x install.sh)",
+      "Bash(bash -n install.sh)",
+      "Bash(python3 -m venv /tmp/ppm-buildvenv)",
+      "Bash(/tmp/ppm-buildvenv/bin/pip -q install hatchling)",
+      "Bash(/tmp/ppm-buildvenv/bin/python -m hatchling build -t wheel)",
+      "Bash(rm -rf dist /tmp/ppm-buildvenv /tmp/ppm-build-test; grep -nE \"^dist|^/dist|build/\" .gitignore | head; echo \"=== git status ===\"; git status --short)",
+      "Bash(gh auth *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git remote *)",
+      "Bash(ssh -o StrictHostKeyChecking=accept-new -T git@github.com)",
+      "Bash(gh pr create --base main --head deploy/lxc --title 'Deploy to LXC via release wheel + systemd service' --body ' *)",
+      "Bash(gh pr *)",
+      "Bash(git pull *)",
+      "Bash(gh run *)",
+      "Bash(git fetch *)",
+      "Bash(git ls-remote *)",
+      "Bash(gh release *)",
+      "Bash(gh api *)",
+      "Bash(grep -vE \"Node.js 20|github.blog|FORCE_JAVASCRIPT|ACTIONS_ALLOW|^\\\\s*$|deprecat\")",
+      "Bash(ssh -o ConnectTimeout=6 -o BatchMode=yes root@192.168.1.100 'echo OK: $\\(hostname\\)')",
+      "Bash(ssh -o ConnectTimeout=6 -o BatchMode=yes root@192.168.1.100 ' *)",
+      "Bash(git commit -q -m ' *)",
+      "Bash(rm -rf /tmp/ppmwheel)",
+      "Bash(ssh root@192.168.1.100 *)",
+      "Bash(curl -s -m 6 http://192.168.1.100:8765/health)"
+    ],
+    "additionalDirectories": [
+      "/tmp/ppm-buildvenv"
+    ]
+  }
+}
