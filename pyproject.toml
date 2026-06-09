@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "plex-playlist-manager"
 dynamic = ["version"]
 description = ""
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 authors = [{ name = "James Berkheimer", email = "james.berkheimer@gmail.com" }]
 dependencies = [
     "fastapi>=0.115.0",
